@@ -1,0 +1,10 @@
+\.pdf$
+\.html$
+\.orig$
+^info/
+^info$
+^pics/
+^pics$
+^saved/
+.pax$
+.ps.depend/
