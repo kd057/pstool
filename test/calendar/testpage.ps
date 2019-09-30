@@ -1,0 +1,48 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% display the calendarium for a single month
+
+(psconfig.ps) run
+
+(lib/psunit.ps) require
+
+(lib/calendar/layout.ps) require
+(lib/calendar/showmonth.ps) require
+(lib/calendar/specialdays.ps) require
+(lib/photo/showphoto.ps) require
+
+% display a single calendar page
+% filename --> |
+/onePage.test {
+    (=== testing display of a single page ... ===) logstack
+    /x 1 inch def		% filename
+    /y 1 inch def		% filename
+
+    layout.calendarOrigin moveto % filename
+    /COUNTRY		(DE) def
+    /COUNTRY.VARIANT	(BW) def
+    2017 1 month.first		% filename
+    month.next			% filename year month
+    exch pop % year not needed	% filename month
+    showMonthNameRight	% filename
+
+    % local dictionary for photo parameters
+    1 dict begin		% filename
+	/fname exch def		%
+	layout.photoSize	% w h
+	layout.photoOrigin	% w h llx lly
+
+	currentdict
+	position.photo		% photo-parameters-dict
+	photo.display		% |
+    end
+} def
+
+(pics/2020-ffm/cimg4923.jpg)
+onePage.test showpage
+
+psunit.summary
+
+% test/testpage.ps ends here ---------------------------------------

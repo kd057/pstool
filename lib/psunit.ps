@@ -1,0 +1,117 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% psunit.ps - unit test support for .ps files
+
+(psconfig.ps) run
+
+(lib/log.ps) require
+
+/psunit.success 0 def
+/psunit.failure 0 def
+
+% keep track of success and failure
+/is.success {
+    (SUCCESS) logln
+    psunit.success 1 add /psunit.success exch def
+} def
+
+/is.failure {
+    (FAILURE) logln
+    psunit.failure 1 add /psunit.failure exch def
+} def
+
+/psunit.summary {
+    (==== SUMMARY ====) logln
+    (     failed:      ) log
+    psunit.failure dup dup logln
+    (     succesful:   ) log
+    psunit.success dup logln
+    (     total:       ) log
+    add logln
+    0 gt {
+	(******* FAILED *******) logln
+    } {
+	(******* OK *******) logln
+    } ifelse
+} def
+
+/psunit.eval {
+    { is.success } { is.failure } ifelse
+} def
+
+/assert.TRUE {
+    psunit.eval
+} def
+
+/assert.FALSE {
+    not assert.TRUE
+} def
+
+/assert.EQ {
+    eq
+    psunit.eval
+} def
+
+% display the test result with a message
+% msg bool --> | % message is displayed
+/psunit.msg.eval {
+    exch log (: ) log % bool
+    { is.success } { is.failure } ifelse
+} def
+
+% display the test result with a message - expects TRUE
+% actual msg --> | % message is displayed
+/assert.msg.TRUE {
+    exch
+    psunit.msg.eval
+} def
+
+% display the test result with a message - expects FALSE
+% actual msg --> | % message is displayed
+/assert.msg.FALSE {
+    exch not
+    psunit.msg.eval
+} def
+
+% display the test result with a message - expects FALSE with a status message
+% true msg --> | % message is displayed
+% status false msg --> | % status and message are displayed
+/assert.msg.status.FALSE {
+    exch dup not	% status msg bool not-bool
+    {			% status msg bool
+	3 2 roll	% msg bool status
+	logln		% msg bool
+    } if		% msg bool
+    not psunit.msg.eval
+} def
+
+% display the test result with a message - expects TRUE
+% true msg --> | % message is displayed
+% status false msg --> | % status and message are displayed
+/assert.msg.status.TRUE {
+    exch dup not	% { status } msg bool bool
+    {			% status msg false
+	3 2 roll	% msg false status
+	logln		% msg false
+    } if
+    psunit.msg.eval
+} def
+
+% check the test result for equality with a message
+% actual msg expected  --> | % message is displayed
+/assert.msg.EQ {
+    dup 3 index ne {			% a m e e a --> a m e
+	(expected: ) log log		% a m
+	(, but found: ) log		% a m
+	exch logln			% m
+	false				% m false
+    } {					% a m e
+	pop exch pop			% m
+	true				% m true
+    } ifelse				% m bool
+    psunit.msg.eval
+} def
+
+% psunit.ps ends here ----------------------------------------------

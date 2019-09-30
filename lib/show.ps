@@ -1,0 +1,60 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% show.ps - variants of the show operator
+
+(psconfig.ps) run
+
+% show a string right justified at the current position
+% string --> |
+/rshow {
+    dup stringsize pop		% string stringwidth
+    neg 0 rmoveto		% string
+    show
+} def
+
+% show a string horizontally centered at the current position
+% string --> |
+/c.show {
+    dup stringsize pop		% string stringwidth
+    neg 2 div 0 rmoveto		% string
+    show
+} def
+
+% show a string horizontally and vertically centered at the current position
+% string --> |
+/cc.show {
+    dup stringsize		% string width height
+    2 div neg			% string width -height/2
+    exch 2 div neg		% string -height/2 -width/2
+    exch rmoveto		% string
+    show
+} def
+
+% show a string right justified and vertically centered at the current position
+% string --> |
+/rc.show {
+    dup stringsize		% string width height
+    2 div neg exch		% string half-height width
+    neg exch			% string width half-height
+    rmoveto			% string
+    show
+} def
+
+% return width and height of a string, if shown in the current font
+% this is the bounding box of the string proper, rotation is set to 0 degrees
+% string --> width height
+/stringsize {
+    gsave
+	0 matrix rotate setmatrix
+	newpath
+	    0 0 moveto
+	    true charpath
+	flattenpath
+	pathbbox
+	4 2 roll pop pop
+    grestore
+} def
+
+% show.ps ends here ------------------------------------------------

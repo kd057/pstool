@@ -1,0 +1,33 @@
+%!PS
+%
+% Copyright (c) 2019, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% display the calendarium for a single month
+
+(psconfig.ps) run
+
+(lib/psunit.ps) require
+
+(lib/calendar/caldata.ps) require
+(lib/calendar/holidays.ps) require
+(lib/calendar/showmonth.ps) require
+
+% to initialize date calculations
+2020 1 month.first
+
+(*** Baden-Wuerttemberg ***) logln
+2020 (DE) (BW) country.holidays
+MAP.HOLIDAY logln
+
+(*** Bayern ***) logln
+2020 (DE) (BY) country.holidays
+MAP.HOLIDAY logln
+
+(*** Berlin ***) logln
+2020 (DE) (BE) country.holidays
+MAP.HOLIDAY logln
+
+psunit.summary
+(***stack should be empty ***) logstack
+
+% test/specialdays.ps ends here ------------------------------------

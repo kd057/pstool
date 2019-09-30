@@ -1,0 +1,419 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% calendar title page
+
+(psconfig.ps) run
+
+% layout definitions
+(lib/calendar/layout.ps) require
+
+% get ISO 8859 character glyphs
+(lib/latinize.ps) require
+
+% additional operators
+(lib/show.ps) require
+(lib/array.ps) require
+
+userdict /photo.dict known not
+userdict /all-photos known not
+or {
+    (*************************************************) logln
+    (* /photo.dict must be defined on the title page *) logln
+    (*************************************************) logln
+    () logln
+    (quitting) logln
+    quit
+} if
+
+% check, if photo.dict knows an item
+% /name -> bool
+/check.dict {
+    photo.dict /title known {
+	dup photo.dict /title get exch known	
+	{
+	    pop
+	    true
+	} {
+	    (*** photo.dict has no entry for: ) log logln
+	    false
+	} ifelse
+    } {
+	(**** title dictionary undefined in photo.dict **** ) log logln
+	false
+    } ifelse
+} def
+
+% check, if the photo.dict has all the required entries
+% quit, it this is not the case
+/check.photo.dict {
+    true
+    % /author	check.dict and
+    /description check.dict and
+    % /localurl	check.dict and
+    /title	check.dict and
+    % /url	check.dict and
+    % /year	check.dict and
+    not {
+	(**** not all required entries defined in photo.dict ****) logln
+	quit
+    } if
+} def
+
+% show the header on the title page
+% title-dict --> |
+/title.page.header.fan {
+    % title part 1 - lower left edge
+    moveToCalendarTitle			% title-dict
+
+    font.title setfont			% title-dict
+    dup /title get			% title-dict title
+    show				% title-dict
+
+    moveToCalendarDescription		% title-dict
+    /description get {			% description
+	0 pt.title neg rmoveto
+	rshow
+    } forall
+} def
+
+% display a copyright notice on the title page
+% | --> |
+/titleCopyRight {
+    photo.dict /title get dup			% title-dict title-dict
+    begin					% title-dict
+	dup /copyrightYear known {
+	    dup /copyrightYear get		% title-dict year
+	} {
+	    dup /year get			% title-dict year
+	} ifelse
+	(\251 ) exch concat			% title-dict (c)-year
+	( ) concat				% title-dict (c)-year
+	exch /author get concat			% copyright-notice
+    end
+    show
+} def
+
+% display the "fine print" on the title page - author, copyright, etc.
+% | --> |
+/title.page.fineprint.fan {
+    gsave
+	% choose a starting point, so that the first photo is displayed
+	% at the lower left edge of the "printable area"
+	layout.printableArea moveto pop 0 rmoveto
+	90 rotate
+	font.day.name setfont
+	0 pt.day.name neg rmoveto
+	titleCopyRight
+	photo.dict /title get dup
+	/url known exch
+	/localurl known
+	and
+	{
+	    ( - ) show
+	    photo.dict /title get /url get (/) concat
+	    photo.dict /title get /localurl get concat
+	    dup show
+	    URLS exch photo.dict /title get /title get exch put
+	} if
+    grestore
+} def
+
+% display the "fine print" on the title page - author, copyright, etc.
+% | --> |
+/title.page.fineprint.grid {
+    gsave
+	% move to the lower right photo of the grid
+	title.page.grid.upper.left
+	grid.x cw mul inner.margin sub
+	grid.y ch mul inner.margin sub neg
+	rmoveto
+	90 rotate
+	font.day.name setfont
+	0 pt.day.name neg rmoveto
+	titleCopyRight
+	photo.dict /title get dup
+	/url known exch
+	/localurl known
+	and
+	{
+	    ( - ) show
+	    photo.dict /title get /url get (/) concat
+	    photo.dict /title get /localurl get concat
+	    dup show
+	    URLS exch photo.dict /title get /title get exch put
+	} if
+    grestore
+} def
+
+% display a title page - photos are arranged in a fan
+% needs the the all-photos array
+/title.page.fan {
+    check.photo.dict
+
+    photo.dict /title get title.page.header.fan
+
+    % scale factor - start at /s, then scale by /ss
+    /s  0.6 def
+    /ss 0.9 def
+
+    % turn - rotate for t, inclrease rotation by t.inc
+    /t     0 def
+    /t.inc 5 def
+
+    gsave
+	title.page.fineprint.fan
+
+	layout.printableArea moveto pop 0 rmoveto
+	photoXpt s mul neg 0 rmoveto
+	currentpoint translate
+
+	/mx .3  inch neg def
+	/my .6  inch     def
+
+	% my will only be roughly corrected for coil binding
+	coilHeight 0 ne {
+	    my .9 mul /my exch def
+	} if
+
+	all-photos revert {
+	    photo.dict exch get
+	    photoXpt photoYpt 0 0
+	    % photo dictionary is expected on top of stack
+	    5 -1 roll
+	    position.photo
+	    gsave
+		s s scale
+		t rotate
+		photo.display
+	    grestore
+
+	    mx my translate
+	    /s s ss    mul def
+	    /t t t.inc add def
+	} forall
+    grestore
+} def
+
+% compute grid parameters
+% columns rows --> defines grid.x, grid.y, ch, cw, ph, pw
+/title.page.grid.parameters {
+    % display all photos in a grid 4 cells wide, 4 cells high
+    % one cell in the upper right and 3 cells in the lower left are
+    % "reserved" for the calendar year and title
+    /grid.y exch def
+    /grid.x exch def
+
+    % validate
+    rowsize length grid.y lt {
+	(**** rowsize has only ) log rowsize length log
+	( entries, but needs ) log grid.y log ( - aborting) logln
+	quit
+    } if
+    rowskip length grid.y lt {
+	(**** rowskip has only ) log rowskip length log
+	( entries, but needs ) log grid.y log ( - aborting) logln
+	quit
+    } if
+
+    % calculate the cell dimensions - cell includes a margin at right and bottom
+
+    % the calendar photo does not need all hight of the printable area;
+    % therefore, photos on the title page are scaled according to the
+    % horizontal dimensions and an additional padding is applied vertically.
+
+    /inner.margin 2 mm def
+
+    layout.printableArea		% width height llx lly
+    pop pop pop				% width
+    inner.margin add			% width-with-margin
+    grid.x div				% cell-width
+    dup /cw exch def			% cell-width
+    inner.margin sub			% width photo-width
+    dup /pw exch def			% photo-width
+
+    photo.aspect div			% photo-height
+    /ph exch def			% |
+    ph inner.margin add			% cell-height
+    /ch exch def			% |
+
+    (title grid .................. : ) logln
+    (    columns / rows .......... : ) log
+	grid.x log ( / ) log grid.y logln
+    (    cell width / height ..... : ) log
+	cw log ( / ) log ch logln
+    (    photo width / height .... : ) log
+	pw log ( / ) log ph logln
+} def
+
+% move to upper left corner of grid
+% | --> |
+/title.page.grid.upper.left {
+    layout.printableArea			% width height llx lly
+    moveto exch pop				% height
+    0 exch rmoveto
+} def
+
+% grid titles might have variants; return the defined variant or the default value
+% variant 0:	see Potsdam 2018 - year centred in the upper right, title centered in the lower left
+% variant 1:	see Wasser 2019@480:3cfeb418a42c - year justified upper right, multi-line title left justified
+% variant 2:	see Wasser 2019 (final) - like 1, but title extend below image area
+% title-dict --> variant
+/get.grid.variant {
+    dup					% title-dict title-dict
+    /variant known {			% title-dict bool
+	dup /variant get
+    } 			{		% title-dict bool
+	0				% title-dict default-variant
+    } ifelse
+    /grid.variant exch def
+} def
+
+% show the header on the title page in an alternative layout
+% title-dict --> |
+/title.page.header.grid {
+    % set title font
+    font.title.large setfont		% title-dict
+
+    % --------------------------------------------
+
+    % title part 1 - description at the lower left edge
+    % move down from the top
+    title.page.grid.upper.left
+    ch grid.y mul inner.margin sub	% title-dict y-correction
+    0 exch neg rmoveto			% title-dict
+    % positioned at lower left corner
+
+    get.grid.variant			% title-dict
+    (    title grid variant ...... : )	log
+    grid.variant 			logln
+
+    grid.variant 0 eq {
+	% VARIANT 0: one title centered in the lower left corner (2 grid cells)
+	% to display the title centered in two grid cells:
+	% move up to vertically center the string in a grid cell
+
+	dup /description get		% title-dict title-array 
+
+	dup 0 get				% title-dict title-array title
+	dup stringsize exch pop		% title-dict title-array title string-height
+	ch inner.margin sub sub 2 div neg		% title-dict title-array title center-y
+	% move right half the width of two cells
+	cw inner.margin 2 div add	% title-dict title-array title center-y center-x
+	exch rmoveto			% title-dict title-array title
+	c.show				% title-dict title-array
+	pop				% title-dict
+    } if
+
+    grid.variant 2 eq {
+	% VARIANT 2 is like VARIANT 2; bottom title line extends below image area
+	/grid.variant 1 def
+	pt.title.large 1.3 mul neg
+	0 exch rmoveto
+    } if
+
+    grid.variant 1 eq {
+	% VARIANT 1: show a list of titles, "bottom up"
+
+	dup /description get		% title-dict title-array 
+	revert
+
+	{				% title-array
+	    currentpoint 3 -1 roll	% title-array x y title
+	    show			% title-array x y
+	    moveto 0 pt.title.large 1.3 mul rmoveto	% title-array
+	} forall
+    } if
+
+
+    % --------------------------------------------
+
+    % title part 2 - year at upper right edge
+    % move down from the top and to the right edge
+    title.page.grid.upper.left
+    cw grid.x mul inner.margin sub	% title-dict x-correction
+    0 rmoveto				% title-dict
+    % position now: upper right corner
+
+    /year get				% year
+
+    grid.variant 0 eq {
+	% % VARIANT 0: show the year centered in the upper right cell
+	% to display the year centered in the grid cell:
+	% move down half the distance to lower edge of grid cell
+	dup stringsize exch pop		% year string-height
+	ch add inner.margin sub 2 div neg	% year center-y
+	% move left half the cell width
+	cw 2 div neg			% year center-y center-x
+	exch rmoveto			% year
+	c.show				% |
+    } if
+
+    grid.variant 1 eq {
+	% VARIANT 1: show the year in the upper right corner
+	% move down a character height
+	% !!! 1.4 is guess work
+	0 pt.title.large 1.4 div neg rmoveto               % title-dict
+	rshow
+    } if
+} def
+
+% display a title page - photos are arranged in a grid
+% needs the the all-photos array
+/title.page.grid {
+    check.photo.dict
+
+    % show so many photos per row
+    /rowsize [ 3 4 4 4 ] def
+    % skip so many photos at the start of each row == start-index of loop
+    /rowskip [ 0 0 1 2 ] def
+
+    4 4 title.page.grid.parameters
+
+    photo.dict /title get title.page.header.grid
+
+    title.page.fineprint.grid
+    title.page.grid.upper.left
+    0 ph neg rmoveto % to lower left corner of first photo
+
+    gsave
+	% index into all-photo
+	/photo.index 0 def
+
+	% set origin to lower left of upper left photo 
+	% for each row the origin will be set accordingly
+	currentpoint translate
+	0 1 grid.y 1 sub {
+	    gsave
+		dup rowskip exch get exch	% min-index loop-index
+		1 exch				% min-index step loop-index
+		rowsize exch get 1 sub		% min-index step max-index
+		{ % for-loop
+		    all-photos length photo.index le {
+			pop % current index
+		    } {
+			cw mul 0 moveto
+
+			% display area
+			pw ph currentpoint	% width height llx lly
+
+			% get photo dictionary
+			all-photos photo.index get	% width height llx lly name-of-photo
+			photo.dict exch get	% width height llx lly photo-parameters
+			position.photo		% photo-parameters
+			photo.display		% |
+		    } ifelse
+
+		    /photo.index photo.index 1 add def
+
+		} for
+	    grestore
+	    0 0 moveto
+	    0 ch neg rmoveto
+	    currentpoint translate
+	} for
+    grestore
+} def
+
+% title.ps ends here -----------------------------------------------

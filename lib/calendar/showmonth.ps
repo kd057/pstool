@@ -1,0 +1,161 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% display the calendarium for a single month
+
+(psconfig.ps) run
+
+(lib/math.ps) require
+(lib/show.ps) require
+
+(lib/calendar/layout.ps) require
+(lib/latinize.ps) require
+(lib/calendar/caldata.ps) require
+(lib/calendar/holidays.ps) require
+
+/width.day {
+    font.day.number setfont
+    width.daynumber     % numwidth
+    font.day.name setfont
+    width.dayname       % numwidth namewidth
+    max                 % maxwidth
+} def
+
+width.day 1.5 mul /DAYWIDTH exch def
+
+% how many days are in the current month?
+% year month --> days-in-month
+/monthdays {
+    dup         % year month month
+    2 eq {      % year month
+        pop     % year
+        isleap  % boolean
+        { 29 } { 28 } ifelse    % 29/28
+    } {         % year month
+        exch pop  % month
+        dup
+        7 gt { even } { odd } ifelse    % boolean
+        { 31 } { 30 } ifelse            % 31/30
+    } ifelse
+} def
+
+% print all days of a month at the current position
+% year month --> .
+/showMonth {
+    /mo exch def
+    /yr exch def
+    font.day.number setfont
+
+    % get number of first day in month
+    /daynum yr mo 1 dayOfYear def
+
+    % show the day numbers and day names
+    DAYWIDTH 2 div 0 rmoveto
+    1 1 yr mo monthdays {     % x y monthdays
+	gsave
+	    yr daynum sunday?
+	    daynum is.a.holiday? or {
+		font.sunday.number setfont
+	    } if
+	    gsave
+		2 string cvs c.show
+	    grestore
+	    gsave
+		0 pt.daynumber rmoveto      % up 1 line
+		yr daynum nameOfDay 
+		yr daynum sunday?
+		daynum is.a.holiday? or {
+		    font.sunday.name setfont
+		} {
+		    font.day.name setfont
+		} ifelse
+		c.show
+	    grestore
+	grestore
+	gsave
+	    yr daynum dayname? {
+		0 pt.holiday dup add neg rmoveto % below the daynumber
+		font.holiday.name setfont
+
+		dup type /arraytype eq {	% array of strings
+		    {
+			gsave
+			    c.show
+			grestore
+			0 pt.holiday neg rmoveto
+		    } forall
+		} {				% regular string
+		    c.show
+		} ifelse
+	    } if
+	grestore
+        DAYWIDTH 0 rmoveto
+        /daynum daynum 1 add def
+    } for
+} def
+
+% print the month name right adjusted at a given position
+% month --> |
+/showMonthNameRight {
+    MONTHS exch get     % name
+
+    font.month.name setfont
+    dup stringwidth     % name wx wy
+    pop neg 0 rmoveto   % name
+    show
+
+    % display the year below or above the month name
+    font.month.year setfont
+    moveToMonthNameRight
+    CURYEAR
+    4 string cvs        % year
+    dup stringwidth     % year wx wy
+    % display below month name
+    % pop neg pt.year 1.2 mul neg rmoveto   % year
+    % display above month name
+    pop neg pt.month rmoveto   % year
+    show
+} def
+
+% define a named dictionary to access year and month
+/CURDATE 3 dict def % last year, year and month
+
+% initialize a sequence of calls of month.next; 
+% maps of holidays etc. are set up when month.next is called
+% might be followed by a sequence of month.next, w/o parameters
+% year month --> |
+/month.first {
+    1 sub dup		% year prev-month prev-month
+    1 lt {		% year prev-month <1
+	pop		% year
+	1 sub		% prev-year
+	12		% prev-year prev-month
+    } if
+
+    /CURMONTH exch def	% year
+    /CURYEAR exch def	% |
+    /LASTYEAR CURYEAR def	% |
+} def
+
+% display the first month of a calendar; fixes year and month numbers;
+% might be followed by a sequence of month.next, w/o parameters
+% internal methods redefine MAP.HOLIDAY, when the year is incremented
+% | --> year month
+/month.next {
+    CURMONTH 1 add      % next-month
+    dup /CURMONTH exch assign	% next-month
+    12 gt {         	%
+	CURYEAR 1 add 	% next-year
+	/CURYEAR exch assign
+	/CURMONTH 1 assign
+    } if
+
+    LASTYEAR CURYEAR ne {         	%
+	CURYEAR COUNTRY COUNTRY.VARIANT setup.day.maps
+	/LASTYEAR CURYEAR assign
+    } if
+    CURYEAR CURMONTH
+} def
+
+% showmonth.ps ends here -------------------------------------------

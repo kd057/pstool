@@ -1,0 +1,97 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% display the calendarium for a single month
+
+% needs latinize.ps to display umlaut characters
+
+(psconfig.ps) run
+
+(lib/math.ps) require
+
+(lib/latinize.ps) require
+(lib/utf8.ps) require
+
+% month names - german
+/MONTHS [
+    (NOT A MONTH)
+    (Januar)
+    (Februar)
+    % Umlaut on next line is taken from ISO8859-1
+    (März) utf8
+    (April)
+    (Mai)
+    (Juni)
+    (Juli)
+    (August)
+    (September)
+    (Oktober)
+    (November)
+    (Dezember)
+] def
+
+/DAYS [
+    (So) % mod 7
+    (Mo)
+    (Di)
+    (Mi)
+    (Do)
+    (Fr)
+    (Sa)
+    (So)
+] def
+
+% current day number from 1 == January, 1st, to 365 or 366
+% year month day --> dayOfYear
+/dayOfYear {
+    exch dup		% year day month month
+    /month exch def	% year day month
+    1 sub 30 mul	% year day increment
+    add			% year draft-dayOfYear
+    month dup 8 gt	% year draft-dayOfYear month bool
+    { 1 add } if	% year draft-dayOfYear corrected-month
+    2 div floor cvi	% year draft-dayOfYear corrected-month/2
+    add			% year dayOfYear
+    month 2 gt		% year dayOfYear bool
+    {
+	exch		% dayOfYear year
+	isleap { 1 } { 2 } ifelse % dayOfYear subtrahend
+	sub		% dayOfYear
+    } { exch pop } ifelse
+} def
+
+% weekday number of the day
+% year daynumber --> weekday (0-6)
+/weekDay {
+    exch firstDay add
+    1 sub
+    7 mod
+} def
+
+% name of the day
+% year daynumber --> name
+/nameOfDay {
+    weekDay
+    DAYS exch get
+} def
+
+% firstDay - weekday number of January, 1st, of a year
+% Gauss' formula, as found in wikipedia
+% w = (1 + 5 * ((year-1) mod 4) +
+%          4 * ((year-1) mod 100) +
+%          6 * ((year-1) mod 400)
+%     ) mod 7
+% year --> weekday (0..6 = So..Sa)
+/firstDay {
+    dup			% year year
+    1 sub 4 mod 5 mul	% year 1st
+    exch dup		% 1st year year
+    1 sub 100 mod 4 mul	% 1st year 2nd
+    exch dup	        % 1st 2nd year year
+    1 sub 400 mod 6 mul	% 1st 2nd year 3rd
+    exch pop add add 1 add
+    7 mod
+} def
+
+/daynum 1 def %- current day of year

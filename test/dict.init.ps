@@ -1,0 +1,32 @@
+%!PS
+%
+% Copyright (c) 2018, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test dictionary select operator
+
+(psconfig.ps) run
+
+(lib/psunit.ps) require
+(lib/collection.ps) require
+(lib/math.ps) require
+(lib/log.ps) require
+
+/container <<
+    /numbers <<
+	1 (one)
+	2 (zwei)
+	3 (trois)
+	4 (quattro)
+	5 (cinque)
+	6 (six)
+	7 (sieben)
+    >>
+>> def
+
+container logln
+container /numbers get logln
+
+showstack
+psunit.summary
+
+% test/dict.init.ps ends here --------------------------------------

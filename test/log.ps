@@ -1,0 +1,40 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test logging / printing functions
+
+(psconfig.ps) run
+
+(lib/log.ps) require
+
+(lib/psunit.ps) require
+
+(next line: 1) logln
+1 log log.ln
+
+(next line: 2) logln
+2 logln
+
+(next line: 34.5) logln
+3 log
+4.5 logln
+
+(next line: 6\t7.8) logln
+6 log
+log.tab
+7.8 logln
+
+(hex value - non integer) logln
+1.2 logx ( 3.4) logx log.ln
+
+(hex value - integer) logln
+1 logx ( ) log 2 logx log.ln
+
+(valid file ) logln
+(/dev/null) (r) file logln
+
+showstack
+psunit.summary
+
+% test/log.ps ends here --------------------------------------------

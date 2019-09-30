@@ -1,0 +1,23 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test definition and handling of jpeg markers
+
+(psconfig.ps) run
+
+(lib/log.ps) require
+(lib/psunit.ps) require
+
+(lib/jpegmarkers.ps) require
+
+(*** dump of: jpeg.marker ***) logln
+jpeg.marker logln
+(*** dump of:jpeg.marker.desc ***) logln
+jpeg.marker.desc logln
+
+% sample to access the dictionaries:
+%	jpeg.marker 216 get logln % SOI
+%	jpeg.marker.desc /SOI get logln
+
+% jpegmarkers.ps ---------------------------------------------------

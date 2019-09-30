@@ -1,0 +1,67 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% display the calendarium for a single month
+
+(psconfig.ps) run
+
+(lib/log.ps) require
+(lib/psunit.ps) require
+(lib/utf8.ps) require
+
+(calendar/photos-2020-frankfurt.ps) require
+
+(lib/calendar/calendar.ps) require
+(lib/calendar/showmonth.ps) require
+(lib/calendar/specialdays.ps) require
+
+/monthdays.test {
+    (=== testing monthdays.ps ... ===) logln
+    2016 01 month.first
+    CURYEAR COUNTRY COUNTRY.VARIANT country.holidays
+
+    2016  1 dup log (: ) log monthdays 31 assert.EQ
+    2016  2 dup log (: ) log monthdays 29 assert.EQ
+    2016  3 dup log (: ) log monthdays 31 assert.EQ
+    2016  4 dup log (: ) log monthdays 30 assert.EQ
+    2016  5 dup log (: ) log monthdays 31 assert.EQ
+    2016  6 dup log (: ) log monthdays 30 assert.EQ
+    2016  7 dup log (: ) log monthdays 31 assert.EQ
+    2016  8 dup log (: ) log monthdays 31 assert.EQ
+    2016  9 dup log (: ) log monthdays 30 assert.EQ
+    2016 10 dup log (: ) log monthdays 31 assert.EQ
+    2016 11 dup log (: ) log monthdays 30 assert.EQ
+    2016 12 dup log (: ) log monthdays 31 assert.EQ
+} def
+
+/month.first.next.test {
+    (=== testing month.first + month.next ... ===) logln
+    2017 11 month.first
+    CURYEAR COUNTRY COUNTRY.VARIANT country.holidays
+
+    month.next
+    11 assert.EQ
+    2017 assert.EQ
+
+    month.next
+    month.next
+    1 assert.EQ
+    2018 assert.EQ
+} def
+
+% prepare for calendar variants
+/COUNTRY		(DE) def
+/COUNTRY.VARIANT	(BW) def
+
+monthdays.test
+month.first.next.test
+
+width.day (*** width.day ***)
+showstack pop pop
+
+psunit.summary
+
+(***stack should be empty ***) logstack
+
+% test/showmonth.ps ends here --------------------------------------

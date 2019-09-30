@@ -1,0 +1,42 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% display the calendarium for a single month
+
+(psconfig.ps) run
+
+(lib/psunit.ps) require
+
+(lib/calendar/caldata.ps) require
+(lib/calendar/specialdays.ps) require
+(lib/calendar/showmonth.ps) require
+
+% initialize calendar
+2017 1 month.first
+2017 (DE) (BW) setup.day.maps
+
+% holidays refer to the current year
+/test.holiday {
+    1 is.a.holiday? assert.TRUE	% new year
+    5 is.a.holiday? assert.FALSE % Jan, 5th, Thursday
+    6 is.a.holiday? assert.TRUE	% Stephen's day
+    7 is.a.holiday? assert.FALSE % Saturday
+    9 is.a.holiday? assert.FALSE % Monday
+    121 is.a.holiday? assert.TRUE % May, 1st
+} def
+
+/test.dayname {
+    2017 6 dayname? dup assert.TRUE { logln } if
+    2017 7 dayname? dup assert.FALSE { logln } if
+    2017 8 dayname? dup assert.FALSE { logln } if
+} def
+
+test.holiday
+test.dayname
+
+psunit.summary
+
+(***stack should be empty ***) logstack
+
+% test/calendar/easter.ps ends here --------------------------------

@@ -1,0 +1,54 @@
+%!PS
+%
+% Copyright (c) 2019, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% display a list of all defined holidays
+
+(psconfig.ps) run
+
+(lib/psunit.ps) require
+
+(lib/calendar/specialdays.ps) require
+(lib/math.ps) require
+
+% holidays.ps is required to get the reverse mapping
+(lib/calendar/holidays.ps) require
+(lib/calendar/showmonth.ps) require
+
+2017 1 month.first
+2017 (DE) (BW) setup.day.maps
+
+setup.DAYNAME
+
+% (*** MAP.HOLIDAY logln ***)
+% MAP.HOLIDAY logln
+% (*** DAY.TO.SYMBOL logln ***)
+% DAY.TO.SYMBOL logln
+% (*** SYMBOL.TO.DAY logln ***)
+% SYMBOL.TO.DAY logln
+
+% test dates for this year
+/year 2017 def
+
+% loop thru the year, respect leap years
+1 1 365					% 1 1 365
+year isleap { 1 add } if		% 1 1 365 (366 for leap years)
+
+{					% daynum
+    dup DAY.TO.SYMBOL exch known {	% daynum bool
+	dup DAY.TO.SYMBOL exch get	% daynum symbol
+	exch log ( --> ) log		% symbol
+	32 string cvs logln		% |
+    } {
+	pop				% |
+    } ifelse
+} for
+
+% MAP.HOLIDAY {
+%     { logln }
+%     { pop } ifelse % print name, if a "real" holiday
+% } forall
+
+(***stack should be empty ***) logstack
+
+% test/specialdays.ps ends here ------------------------------------

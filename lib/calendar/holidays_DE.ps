@@ -1,0 +1,114 @@
+%!PS
+%
+% Copyright (c) 2019, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% holiday definitions for Germany - nation wide and state specific
+
+% this module assumes that the common holidays already have been
+% defined; it provides additional entries to be added to MAP.HOLIDAY
+%    MAP.HOLIDAY	symbol -> true/false, if a "real" holiday or not
+
+% sources:	https://feiertag.info/feiertage/deutschland/
+% 		https://feiertage.net/frei-tage.php
+% and others
+
+(psconfig.ps) run
+
+/holidays <<
+    /common << % for all states in Germany
+	/ASCENSION	true
+	/CHRISTMAS	true
+	/EASTER		true
+	/EASTERMONDAY	true
+	/GOODFRIDAY	true
+	/HOLYNIGHT	false
+	/LABORDAY	true
+	/NEWYEAR	true
+	/PENTECOST	true
+	CURYEAR 2017 eq {
+	    /REFORMATION true
+	} if
+	/SAINTSTEPHEN	true
+	/SILVESTER	false
+	/UNITYDAY	true
+	/WHITMONDAY	true
+    >>
+
+    /BB << % Brandenburg
+	/REFORMATION	true
+    >>
+
+    /BE << % Berlin
+	/WOMENS.DAY	true
+    >>
+
+    /BW << % Baden-Württemberg
+	/EPIPHANY	true
+	/CORPUSCHRISTI	true
+	/ALLSAINTS	true
+    >>
+
+    /BY << % Bayern
+	/EPIPHANY	true
+	/CORPUSCHRISTI	true
+	% Augsburger Friedensfest * Do 08.08.2019 BY
+	/PEACE.FESTIVAL false
+	/ASSUMPTIONDAY	true
+	/ALLSAINTS	true
+    >>
+
+    /HE << % Hessen
+	/CORPUSCHRISTI	true
+    >>
+
+    /HH << % Hamburg
+	/REFORMATION	true
+    >>
+
+    /MV << % Mecklenburg-Vorpommern
+	/REFORMATION	true
+    >>
+
+    /NI << % Niedersachsen
+	/REFORMATION	true
+    >>
+
+    /NW << % Nordrhein-Westfalen
+	/CORPUSCHRISTI	true
+	/ALLSAINTS	true
+    >>
+
+    /RP << % Rheinland-Pfalz
+	/CORPUSCHRISTI	true
+	/ALLSAINTS	true
+    >>
+
+    /SH << % Schleswig-Holstein
+	/REFORMATION	true
+    >>
+
+    /SL << % Saarland
+	/CORPUSCHRISTI	true
+	/ASSUMPTIONDAY	true
+	/ALLSAINTS	true 
+    >>
+
+    /SN << % Sachsen
+	/REFORMATION	true
+	% Buß- und Bettag Mi 20.11.2019 SN
+	/REPENTANCE	true
+    >>
+
+    /ST << % Sachsen-Anhalt
+	/EPIPHANY	true
+	/REFORMATION	true
+    >>
+
+    /TH << % Thüringen
+	% Weltkindertag * Fr 20.09.2019 TH
+	/CHILDRENS.DAY	true
+	/REFORMATION	true
+    >>
+>> def
+
+% holidays_DE.ps ends here -----------------------------------------

@@ -1,0 +1,50 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% hd.ps - hex dump
+
+(psconfig.ps) run
+
+(lib/psunit.ps) require
+(lib/hd.ps) require
+
+/s39 (abcdefghijklmnopqrstuvwxyz1234567890) def
+/d10 (0123456789) def
+
+mark
+/cnt 0 def
+s39 {
+    dup length 0 eq {
+	pop exit
+    } if
+    /cnt cnt 1 add def
+    16 string.head logln
+}loop
+
+cnt
+(string.head loop passed 3 times         ) 3 assert.msg.EQ
+
+counttomark exch pop
+(stack is empty after string.head loop   ) 0 assert.msg.EQ
+
+mark
+d10 hd length
+(hex representation has expected length  ) d10 length 3 mul assert.msg.EQ
+counttomark exch pop
+(stack is empty after calling hd operator) 0 assert.msg.EQ
+
+% create test data file
+/testfilename (testdata) def
+testfilename (w) file /testfile.w exch def
+testfile.w (0123456789abcdefghijk) writestring
+testfile.w closefile
+
+(testfilename (r) file) logln
+testfilename (r) file hd.file
+testfilename deletefile
+
+pstack
+psunit.summary
+
+% hd.ps ends here --------------------------------------------------

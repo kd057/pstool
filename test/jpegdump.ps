@@ -1,0 +1,40 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% jpeg - provide a readable dump of a jpeg file
+
+(psconfig.ps) run
+
+(lib/log.ps) require
+(lib/psunit.ps) require
+(lib/jpegdump.ps) require
+
+
+% test files:
+%	pics/2016/cimg3527-16:9.jpg JPEG 3648x2052 3648x2052+0+0 8-bit sRGB 2.07198MiB 0.203u 0:00.210
+%	pics/2017/cimg0195-16:9.jpg JPEG 3642x2048 3642x2048+0+0 8-bit sRGB 2.48461MiB 0.227u 0:00.234
+
+/invalid.name (invalid.jpg) def
+invalid.name (w) file /invalid.write exch def
+invalid.write 16#ff write
+invalid.write (0123456789) writestring
+invalid.write closefile
+
+/pic.bw     (pics/2020-ffm/cimg0450-16:9-bw.jpg) def
+/pic.col    (pics/2020-ffm/cimg4923.jpg) def
+/pic.null   (/dev/null) def
+/pic.nopic  (/etc/motd) def
+
+pic.bw     jpegdump (bw image - accepted)		assert.msg.status.TRUE
+pic.col    jpegdump (colour image - accepted)		assert.msg.status.TRUE
+pic.null   jpegdump (empty file - not accepted)		assert.msg.status.FALSE
+pic.nopic  jpegdump (no image - not accepted)		assert.msg.status.FALSE
+
+invalid.name jpegdump (invalid image - not accepted)	assert.msg.status.FALSE
+invalid.name deletefile
+
+showstack
+psunit.summary
+
+% jpegdump.ps ------------------------------------------------------

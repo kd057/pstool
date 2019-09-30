@@ -1,0 +1,113 @@
+%!PS
+%
+% Copyright (c) 2018, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% card layout
+%
+
+(psconfig.ps) run
+
+(lib/math.ps) require
+(lib/latinize.ps) require
+
+% copied and adjusted to A4 from: lib/presentation/layout.ps
+% ------------------------------------------------------------------
+% landscape formatting references:
+% ==================== for paper sizes:        http://paulbourke.net/dataformats/postscript/
+%                      for landscape printing: http://pages.cs.wisc.edu/~rjl/landscape/
+%
+% A3 paper size is 1191pt x 842pt == 16.54" x 11.69" == 420mm x 297mm
+% A4 paper size is  842pt x 595pt == 11.69" x  8.27" == 297mm x 210mm
+%
+% ------------------------------------------------------------------
+%
+% %%DocumentMedia: A3 1191 842 0 () ()  % tagname width height weight(undef) paper-color(undef) type-of-form(undef)
+% %%DocumentMedia: A4  842 595 0 () ()  % tagname width height weight(undef) paper-color(undef) type-of-form(undef)
+
+                % ============================================ %
+                %                  IMPORTANT                   %
+                %        device resolution is set on the       %
+                %            ghostscript command line          %
+                % ============================================ %
+
+% ------------------------------------------------------------------
+% layout dictionary
+% ------------------------------------------------------------------
+
+% layout definitions are kept in a dictionary with predefined entries
+/layout <<
+    /pageWidth     	595	% pt
+    /pageHeight    	421 2 div	% pt
+    /margin <<				% page margins
+	/top		 .5 inch
+	/left		 .5 inch
+	/right		 .5 inch
+	/bottom		 .5 inch
+    >> def
+    /template <<
+	/title <<	% presentation title
+	    /font	 /Helvetica-Bold-ISO8859
+	    /pt		 48
+	>>
+	/header <<	% slide header
+	    /font	 /Helvetica-Bold-ISO8859
+	    /pt		 24
+	>>
+	/body <<	% slide body
+	    /font 	 /Helvetica-ISO8859
+	    /pt          12
+	>>
+	/quote <<	% quote
+	>>
+    >>
+    /curtemplate	/body	% provide a default
+    /curindentation	0	% current indentation
+>> def
+
+% ------------------------------------------------------------------
+% set the page device parameters
+% ------------------------------------------------------------------
+
+<<
+    /PageSize [
+	layout /pageWidth get
+	layout /pageHeight get
+    ]
+    /Orientation 0
+>> setpagedevice
+
+% ------------------------------------------------------------------
+% get and instal layout properties
+% ================================
+
+% move to the top left coordinates of the printable area 
+% might be followed by a NL, to get to the baseline
+% | --> | moved to ulx uly
+/begin.of.page {
+    layout begin
+	margin /left get		% ulx
+	pageHeight			% ulx height
+	margin /top get			% ulx height margin
+	sub				% ulx uly
+	moveto
+    end
+} def
+
+% switch to a predefined font
+% name --> |
+/switchFont {
+    layout /template get		% name font-spec
+    dup 2 index known		{	% name font-spec bool
+	exch get			% dict
+	dup /cur.font.dict exch def	% dict
+	dup /pt get			% dict pt
+	exch /font get			% pt fontname
+	findfont			% pt font
+	exch scalefont setfont		% |
+    } {
+	(**** switchfont: unknown font definition: ) log logln
+	quit
+    } ifelse
+} def
+
+% card/layout.ps ends here -----------------------------------------

@@ -1,0 +1,290 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% layout definitions for the calendar
+
+(psconfig.ps) run
+
+(lib/math.ps) require
+(lib/latinize.ps) require
+
+% tables of day names, etc
+(lib/calendar/caldata.ps) require
+
+% ------------------------------------------------------------------
+% landscape formatting references:
+% ==================== for paper sizes:        http://paulbourke.net/dataformats/postscript/
+%                      for landscape printing: http://pages.cs.wisc.edu/~rjl/landscape/
+%
+% A3 paper size is 1191pt x 842pt == 16.54" x 11.69" == 420mm x 297mm
+% A4 paper size is  842pt x 595pt == 11.69" x  8.27" == 297mm x 210mm
+%
+% photos are in 16:9 format:
+%       size in pixels: 3642   x 2048
+%       size in points: 1190   x  670
+%       size in inches:   16.5 x    9.3
+%       size in cm:       41.9 x   23.6
+% this roughly corresponds to an image resolution of 220 px/inch
+%
+% there is a left and right margin of 1 inch each; the top margin is 9/16 inch, the bottom margin is 1 inch
+%
+% ------------------------------------------------------------------
+%
+% %%DocumentMedia: A3 1191 842 0 () ()  % tagname width height weight(undef) paper-color(undef) type-of-form(undef)
+% %%DocumentMedia: A4  842 595 0 () ()  % tagname width height weight(undef) paper-color(undef) type-of-form(undef)
+
+                % ============================================ %
+                %                  IMPORTANT                   %
+                %        device resolution is set on the       %
+                %            ghostscript command line          %
+                % ============================================ %
+
+/pageWidth     1190 def
+/pageHeight     842 def
+
+<<
+    /PageSize [pageWidth pageHeight]
+    /Orientation 0
+>> setpagedevice
+
+% ------------------------------------------------------------------
+% photo default aspect ratio
+% ==========================
+
+/photo.aspect 16 9 div def
+
+% ------------------------------------------------------------------
+% keep the layout in a dictionary
+% ===============================
+
+/layout 20 dict def
+
+% ------------------------------------------------------------------
+% position and dimensions of page elements
+% ========================================
+
+% photo margins on the page - in integral points
+/photoMarginSide 1 inch cvi def
+/photoMarginTop photoMarginSide photo.aspect div cvi def
+
+% photo dimensions in points - margin on both sides
+/photoXpt pageWidth photoMarginSide dup add sub cvi def
+/photoYpt photoXpt photo.aspect div cvi def
+
+/photoLLX photoMarginSide def
+/photoLLY pageHeight photoMarginTop sub photoYpt sub def
+
+                % ============================================ %
+                %   if printed for coil binding, reduce the    %
+                %        total page height accordingly!        %
+                % ============================================ %
+
+% coilHeight could be provided on the command line: ... -dcoilHeight=29
+% otherwise, a more precise value could be provided here:
+systemdict /coilHeight known not {
+    /coilHeight	  1 cm def
+} if
+
+/pageHeight	pageHeight coilHeight sub def
+/photoLLY	photoLLY   coilHeight sub def
+
+/layout <<
+    % position and size of photo in absolute pt
+    /photo [
+		photoLLX
+		photoLLY
+		photoXpt
+		photoYpt
+	    ]
+
+    % position and size of calendar in absolute pt
+    /calendar [
+		photoLLX
+		1 inch
+		photoXpt
+		0
+	    ]
+>> def
+
+% ------------------------------------------------------------------
+% get predefined positions
+% ========================
+
+% push size and origin of the printable area on the stack, which extends
+% from the lower left of the calendar to the upper right of the photo
+% | --> width height llx lly
+/layout.printableArea {
+    % height = photo height + (difference from calendar-y to photo-y)
+    layout.photoSize			% width height
+    layout.photoOrigin exch pop		% width height photo-lly
+    layout.calendarOrigin exch pop	% width height photo-lly calendar-lly
+    sub	add				% width height				
+    layout.calendarOrigin		% width height llx lly
+} def
+
+% push the lower left coordinates of the photo on the stack
+% | --> llx lly
+/layout.photoOrigin {
+    layout /photo get dup	% layout-array layout-array
+    0 get			% layout-array llx
+    exch 1 get			% llx lly
+} def
+
+% push the x- and y-size of the photo on the stack
+% | --> urx ury
+/layout.photoSize {
+    layout /photo get dup	% layout-array layout-array
+    2 get			% layout-array urx
+    exch 3 get			% urx ury
+} def
+
+% push the lower left coordinates of the calendar on the stack
+% | --> llx lly
+/layout.calendarOrigin {
+    layout /calendar get dup	% layout-array layout-array
+    0 get			% layout-array llx
+    exch 1 get			% llx lly
+} def
+
+% push the x- and y-size of the calendar on the stack
+% | --> urx ury
+/layout.calendarSize {
+    layout /calendar get dup	% layout-array layout-array
+    2 get			% layout-array urx
+    exch 3 get			% urx ury
+    pt.day.name pt.holiday pt.daynumber	% urx urx pt1 pt2 pt3
+    add add 1.3 mul exch pop	% urx real-ury
+} def
+
+% ------------------------------------------------------------------
+% move to predefined positions
+% ============================
+
+% move to lower right position of month name
+/moveToMonthNameRight {
+    layout.calendarOrigin moveto
+    layout.calendarSize pop 0 rmoveto
+} def
+
+% title on header page:
+% lower left edge of calendar
+/moveToCalendarTitle {
+    layout.printableArea  moveto
+    pop pop
+} def
+
+% description on header page:
+% upper right edge of calendar
+/moveToCalendarDescription {
+    layout.printableArea  moveto
+    rmoveto
+} def
+
+% title at the lower left corner
+/moveToPhotoTitle {
+    layout.photoOrigin moveto
+    0 pt.day.name 1.3 mul neg rmoveto
+} def
+
+% ------------------------------------------------------------------
+% predefined fonts
+% ================
+
+/pt.title.large 72 def
+/pt.day.name    10 def
+/pt.holiday      6 def
+/pt.daynumber   16 def
+/pt.month       36 def
+/pt.year        18 def
+
+% month name on a calendar sheet
+/font.month.name  /Helvetica-ISO8859 findfont pt.month scalefont def
+
+% title font on title page
+/font.title.large /Helvetica-ISO8859 findfont pt.title.large scalefont def
+
+% alternative title font:
+/pt.title pt.month def
+/font.title font.month.name def
+
+% year number on a calendar sheet
+/font.month.year  /Helvetica-ISO8859 findfont pt.year scalefont def
+
+% day name on a calendar sheet
+/font.day.name  /Helvetica-ISO8859 findfont pt.day.name scalefont def
+/font.sunday.name  /Helvetica-Bold-ISO8859 findfont pt.day.name 1.3 mul scalefont def
+/font.holiday.name  /Helvetica-ISO8859 findfont pt.holiday scalefont def
+
+% day number on a calendar sheet
+/font.day.number  /Helvetica-ISO8859 findfont pt.daynumber scalefont def
+/font.sunday.number  /Helvetica-Bold-ISO8859 findfont pt.daynumber scalefont def
+
+% ------------------------------------------------------------------
+% calculate significant measures
+% ==============================
+
+% returns the maximum width to show a daynumber
+% | --> width
+/width.daynumber {
+    0                   % current maximumm
+    1 1 31 {
+        2 string cvs
+        stringwidth pop
+        max
+    } for
+} def
+
+% returns the maximum width to show a dayname
+% | --> width
+/width.dayname {
+    0                   % current maximumm
+    DAYS {
+        stringwidth pop
+        max
+    } forall
+} def
+
+/coilStatus {
+    coilHeight 0 ne {
+	log.ln
+	(****\tcoil binding in cm: ) log
+	    coilHeight 1 cm div logln
+	log.ln
+	log.ln
+    }{
+	(no coil binding provided) logln
+    } ifelse
+} bind def
+
+/layoutStatus {
+    (pageWidth ................... : ) log pageWidth logln
+    (pageHeight .................. : ) log pageHeight logln
+    (coilHeight .................. : ) log coilHeight logln
+    (Photo aspect .   ............ : ) log photo.aspect logln
+    (photoOrigin ................. : ) log
+	layout.photoOrigin exch log ( / ) log logln
+    (photoSize ................... : ) log
+	layout.photoSize exch log ( / ) log logln
+    (calendarOrigin .............. : ) log
+	layout.calendarOrigin exch log ( / ) log logln
+    (calendarSize ................ : ) log
+	layout.calendarSize exch log ( / ) log logln
+    (photoXpt .................... : ) log photoXpt logln
+    (photoYpt .................... : ) log photoYpt logln
+    (photoMarginSide ............. : ) log photoMarginSide logln
+    (photoMarginTop .............. : ) log photoMarginTop logln
+    (font sizes:) logln
+    (    pt.title ................ : ) log pt.title logln
+    (    pt.day.name ............. : ) log pt.day.name logln
+    (    pt.holiday  ............. : ) log pt.holiday logln
+    (    pt.daynumber ............ : ) log pt.daynumber logln
+    (    pt.month ................ : ) log pt.month logln
+    (    pt.year ................. : ) log pt.year logln
+    (width.daynumber ............. : ) log width.daynumber logln
+    (width.dayname ............... : ) log width.dayname logln
+    % next statement needs showmonth .ps
+    (DAYWIDTH .................... : ) log DAYWIDTH logln
+} def
+
+% layout.ps ends here ----------------------------------------------

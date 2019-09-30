@@ -1,0 +1,78 @@
+%!PS
+
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+(psconfig.ps) run
+
+(lib/log.ps) require
+
+% jpeg segment marker initialization data - an array of segment marker description
+% Note: this table is incomplete
+% each description consists of:
+%	- marke name (symbol)
+%	- hex code
+%	- length / payload (see below)
+%	- description / comment
+% the length is one of:
+% -1	- variable length
+%  0	- no payload
+%  1..n	- length of payload
+/jpeg.marker.initial [
+    [ /SOF0	16#c0	-1	(Start of Frame - baseline DCT) ]
+    [ /SOF2	16#c2	-1	(Start of Frame - progressive DCT) ]
+    [ /DHT	16#c4	-1	(Define Huffman Tables) ]
+    [ /RST0	16#d0	 0	(Restart 0) ]
+    [ /RST1	16#d1	 0	(Restart 1) ]
+    [ /RST2	16#d2	 0	(Restart 2) ]
+    [ /RST3	16#d3	 0	(Restart 3) ]
+    [ /RST4	16#d4	 0	(Restart 4) ]
+    [ /RST5	16#d5	 0	(Restart 5) ]
+    [ /RST6	16#d6	 0	(Restart 6) ]
+    [ /RST7	16#d7	 0	(Restart 7) ]
+    [ /SOI	16#d8	 0	(Start of Image) ]
+    [ /EOI	16#d9	 0	(End of Image ) ]
+    [ /SOS	16#da	-1	(Start of Scan) ]
+    [ /DQT	16#db	-1	(Quantization Table) ]
+    [ /DRI	16#dd 	-1 	(Define Restart Interval) ]
+    [ /APP0	16#e0	-1	(JFIF application segment 0) ]
+    [ /APP1	16#e1	-1	(JFIF application segment 1) ]
+    [ /APP2	16#e2	-1	(JFIF application segment 2) ]
+    [ /APP3	16#e3	-1	(JFIF application segment 3) ]
+    [ /APP4	16#e4	-1	(JFIF application segment 4) ]
+    [ /APP5	16#e5	-1	(JFIF application segment 5) ]
+    [ /APP6	16#e6	-1	(JFIF application segment 6) ]
+    [ /APP7	16#e7	-1	(JFIF application segment 7) ]
+    [ /APP8	16#e8	-1	(JFIF application segment 8) ]
+    [ /APP9	16#e9	-1	(JFIF application segment 9) ]
+    [ /APPa	16#ea	-1	(JFIF application segment a) ]
+    [ /APPb	16#eb	-1	(JFIF application segment b) ]
+    [ /APPc	16#ec	-1	(JFIF application segment c) ]
+    [ /APPd	16#ed	-1	(JFIF application segment d) ]
+    [ /APPe	16#ee	-1	(JFIF application segment e) ]
+    [ /APPf	16#ef	-1	(JFIF application segment f) ]
+    [ /COM	16#fe	-1	(Comment) ]
+] def
+
+/jpeg.marker      	jpeg.marker.initial length dict def	% code   --> symbol
+/jpeg.marker.seglen	jpeg.marker.initial length dict def	% symbol --> length
+/jpeg.marker.desc 	jpeg.marker.initial length dict def	% symbol --> description
+
+% create helper tables, indexed by symbol names or hex codes
+jpeg.marker.initial {
+				% seg-description
+    debugging { % debugging enabled in psconfig.ps
+	(name: ) log dup 0 get log
+	(, code: ) log dup 1 get log
+	(, length: ) log dup 2 get log
+	(, desc: ) log dup 3 get log
+	log.ln
+    } if
+
+    dup 1 get 1 index 0 get jpeg.marker     	3 1 roll put
+    dup 0 get 1 index 2 get jpeg.marker.seglen	3 1 roll put
+    dup 0 get 1 index 3 get jpeg.marker.desc	3 1 roll put
+
+    pop
+} forall
+
+% jpegmarkers.ps ---------------------------------------------------

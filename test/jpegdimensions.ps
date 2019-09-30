@@ -1,0 +1,40 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% jpegdimensions - extract height and width from a jpeg file
+
+(psconfig.ps) run
+
+(lib/log.ps) require
+(lib/psunit.ps) require
+(lib/jpegdump.ps) require
+
+% test files - properties evaluated with GraphicsMagick (gm identify ...):
+%       pics/2020-ffm/cimg0450-16:9-bw.jpg JPEG 3640x2052+0+0 PseudoClass 256c 8-bit 3.9Mi 0.000u 0m:0.000059s
+%       pics/2020-ffm/cimg4923.jpg JPEG 3648x2736+0+0 DirectClass 8-bit 2.3Mi 0.000u 0m:0.000006s
+%       pics/2018/test-lion-panorama.jpg JPEG 2996x964+0+0 DirectClass 8-bit 2.3Mi 0.000u 0m:0.000007s
+
+/pic.bw     (pics/2020-ffm/cimg0450-16:9-bw.jpg) def
+/pic.col    (pics/2020-ffm/cimg4923.jpg) def
+/pic.pano   (pics/2018/test-lion-panorama.jpg) def
+
+pic.bw     jpeg.dimensions
+            (pic.bw image bpp        )         8 assert.msg.EQ
+            (pic.bw image height     )      2052 assert.msg.EQ
+            (pic.bw image width      )      3640 assert.msg.EQ
+
+pic.col    jpeg.dimensions
+            (pic.col image bpp       )         8 assert.msg.EQ
+            (pic.col image height    )      2736 assert.msg.EQ
+            (pic.col image width     )      3648 assert.msg.EQ
+
+pic.pano   jpeg.dimensions
+            (pic.pano image bpp      )         8 assert.msg.EQ
+            (pic.pano image height   )       964 assert.msg.EQ
+            (pic.pano image width    )      2996 assert.msg.EQ
+
+showstack
+psunit.summary
+
+% jpegdimensions.ps ------------------------------------------------

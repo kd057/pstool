@@ -1,0 +1,81 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test file handling functions
+
+(psconfig.ps) run
+
+(lib/file.ps) require
+(lib/log.ps) require
+
+(lib/psunit.ps) require
+
+% create test data file
+/testfilename (testdata) def
+
+testfilename (w) file /testfile.w exch def
+testfilename (r) file /testfile.r exch def
+testfile.w (0123456789) writestring
+testfile.w fileposition /filesize exch def
+testfile.w closefile
+
+/read.2.words {
+    testfile.r resetfile
+
+    % read first word
+    testfile.r read.word assert.TRUE
+    16#30 assert.EQ	% digit 0
+    16#31 assert.EQ	% digit 1
+
+    % read 2nd word
+    testfile.r read.word assert.TRUE
+    16#32 assert.EQ	% digit 2
+    16#33 assert.EQ	% digit 3
+} def
+
+% fail at reading the 2nd word
+/read.3.bytes {
+    testfile.r resetfile
+
+    % position to 3rd last byte
+    testfile.r filesize 3 sub setfileposition
+
+    % read first word
+    testfile.r read.word assert.TRUE
+    16#37 assert.EQ	% digit 7
+    16#38 assert.EQ	% digit 8
+
+    % read second word - must fail
+    testfile.r read.word assert.FALSE
+} def
+
+% fail at reading past EOF
+/read.no.bytes {
+    % cannot position backwards, so close and open again
+    testfile.r closefile
+    testfilename (r) file /testfile.r exch def
+
+    % position to last byte
+    testfile.r filesize 1 sub setfileposition
+    testfile.r read.word assert.FALSE
+} def
+
+% reading /dev/null must fail
+/read.null.file {
+    (/dev/null) (r) file /nullfile.r exch def
+
+    nullfile.r read.word assert.FALSE
+} def
+
+read.2.words
+read.3.bytes
+read.no.bytes
+read.null.file
+
+testfilename deletefile
+showstack
+
+psunit.summary
+
+% test/file.ps ends here -------------------------------------------

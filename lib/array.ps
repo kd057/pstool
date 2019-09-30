@@ -1,0 +1,113 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% array.ps - array functions 
+
+% revert an array
+% array -> reverted-array
+/revert {
+    dup length array /newarray exch def	% old-array
+    /into newarray length 1 sub def	% old-array
+    dup					% old-array old-array
+    0 1 newarray length 1 sub {		% old-array index
+	get newarray into 3 2 roll put	% 
+	dup				% old-array old-array
+	/into into 1 sub def
+    } for
+    pop pop
+    newarray
+} def
+
+% select elements of an array matching a criterion
+% array filter --> subarray
+/array.select {
+    /select.filter exch def		% array
+    /select.index 0 def			% array
+    dup length array /result exch def	% array
+    {					% element
+	dup select.filter {
+	    result exch			% result element
+	    select.index exch		% result index element
+	    put				%
+	    /select.index select.index 1 add def
+	} {
+	    pop
+	} ifelse
+    } forall
+    result 0 select.index getinterval
+} def
+
+% similar to select, but return non-matching values as well
+% array filter --> matching non-matching
+/array.select2 {
+    /select.filter exch def		% array
+    /select.index 0 def			% array
+    /unselect.index 0 def			% array
+    dup length array /result exch def	% array
+    dup length array /unresult exch def	% array
+    {					% element
+	dup select.filter {
+	    result exch			% result element
+	    select.index exch		% result index element
+	    put				%
+	    /select.index select.index 1 add def
+	} {
+	    unresult exch			% result element
+	    unselect.index exch		% result index element
+	    put				%
+	    /unselect.index unselect.index 1 add def
+	} ifelse
+    } forall
+    result 0 select.index getinterval
+    unresult 0 unselect.index getinterval
+} def
+
+% duplicate an array
+% orig --> duplicate
+/array.dup {
+    0 1 index length getinterval
+} def
+
+% compare the content of two arrays
+% array1 array2 array.eq --> bool
+/array.eq {
+    2 copy length exch length eq {		% array1 array2 length1 bool
+	% could be equal - check elements
+	0 1 2 index length 1 sub {			% array1 array2 index
+	    3 copy				% array1 array2 index array1 array2 index
+	    get					% array1 array2 index array1 val2
+	    3 1 roll exch			% array1 array2 val2 array1 index
+	    get eq				% array1 array2 bool
+	    not { false exit } if		% array1 array2 bool
+	} for
+	type /arraytype eq {			% array1 bool
+	    pop true
+	} {
+	    pop pop false
+	} ifelse
+    } {						% array1 array2 length1
+	pop pop				% |
+	false					% false
+    } ifelse
+} def
+
+% get a byte out of an array / string and increment index
+% array index --> array new-index word
+/scan.byte {
+    2 copy get		% array index byte
+    exch 1 add exch	% array new-index byte
+} def
+
+% get a word (2 bytes) out of an array / string and increment index
+% array index --> array new-index word
+/scan.word {
+    2 copy get		% array index 1st-byte
+    256 mul		% array index 1st-byte*256
+    exch 1 add exch	% array index 1st-byte*256
+    3 copy pop get 	% array index 1st-byte*256 2nd-byte
+    add			% array index word
+    exch 1 add exch	% array new-index word
+} def
+
+% array.ps ends here -----------------------------------------------

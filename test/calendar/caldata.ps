@@ -1,0 +1,63 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% display the calendarium for a single month
+
+(psconfig.ps) run
+
+(lib/math.ps) require
+(lib/psunit.ps) require
+
+(lib/calendar/caldata.ps) require
+
+/dayOfYear.test {
+    2016 12 31 dayOfYear 366 assert.EQ
+    2017 12 31 dayOfYear 365 assert.EQ
+    2017  1  1 dayOfYear   1 assert.EQ
+    2017  1 31 dayOfYear  31 assert.EQ
+    2017  2 28 dayOfYear  59 assert.EQ
+    2017  3  1 dayOfYear  60 assert.EQ
+    2017  5 31 dayOfYear 151 assert.EQ
+    2017  7 31 dayOfYear 212 assert.EQ
+    2017  8  1 dayOfYear 213 assert.EQ
+    2017  8 31 dayOfYear 243 assert.EQ
+    2017  9  1 dayOfYear 244 assert.EQ
+    2017 11 30 dayOfYear 334 assert.EQ
+    2017 12  1 dayOfYear 335 assert.EQ
+} def
+
+/nameOfDay.test {
+    2016 dup 12 31 dayOfYear nameOfDay (Sa) assert.EQ
+    2017 dup 12 31 dayOfYear nameOfDay (So) assert.EQ
+    2017 dup  1  1 dayOfYear nameOfDay (So) assert.EQ
+    2017 dup  1 31 dayOfYear nameOfDay (Di) assert.EQ
+    2017 dup  2 28 dayOfYear nameOfDay (Di) assert.EQ
+    2017 dup  3  1 dayOfYear nameOfDay (Mi) assert.EQ
+    2017 dup  5 31 dayOfYear nameOfDay (Mi) assert.EQ
+    2017 dup  7 31 dayOfYear nameOfDay (Mo) assert.EQ
+    2017 dup  8  1 dayOfYear nameOfDay (Di) assert.EQ
+    2017 dup  8 31 dayOfYear nameOfDay (Do) assert.EQ
+    2017 dup  9  1 dayOfYear nameOfDay (Fr) assert.EQ
+    2017 dup 11 30 dayOfYear nameOfDay (Do) assert.EQ
+    2017 dup 12  1 dayOfYear nameOfDay (Fr) assert.EQ
+} def
+
+/firstDay.test {
+    1999 firstDay 5 assert.EQ
+    2000 firstDay 6 assert.EQ
+    2001 firstDay 1 assert.EQ
+    2016 firstDay 5 assert.EQ
+    2017 firstDay 7 mod 0 assert.EQ
+    2018 firstDay 1 assert.EQ
+} def
+
+dayOfYear.test
+nameOfDay.test
+firstDay.test
+
+psunit.summary
+
+(***stack should be empty ***) logstack
+
+% test/caldata.ps ends here ----------------------------------------

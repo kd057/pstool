@@ -1,0 +1,64 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% display a photo
+
+(psconfig.ps) run
+
+(lib/log.ps) require
+(lib/psunit.ps) require
+
+(lib/photo/showphoto.ps) require
+(lib/calendar/layout.ps) require
+
+layout.photoSize			% filename w h
+layout.photoOrigin			% filename w h llx lly
+1 dict begin
+    /fname (pics/2020-ffm/cimg5054.jpg) def
+    currentdict position.photo
+    photo.display			% |
+end
+showpage
+
+800					% width
+450					% height
+200					% llx
+100					% lly
+1 dict begin
+    /fname (pics/2020-ffm/cimg5054.jpg) def
+    currentdict position.photo
+    dup /isClipped true put
+    photo.display
+end
+showpage
+
+800					% width
+450					% height
+200					% llx
+100					% lly
+1 dict begin
+    /fname (pics/2020-ffm/cimg4923.jpg) def
+    currentdict position.photo
+    dup /isClipped true put
+    photo.display
+end
+showpage
+
+800					% width
+450					% height
+200					% llx
+100					% lly
+1 dict begin
+    /fname (pics/2018/test-lion-panorama.jpg) def
+    currentdict position.photo
+    dup /isClipped false put
+    photo.display
+end
+showpage
+
+psunit.summary
+
+(***stack should be empty ***) logstack
+
+% test/photo.display.ps ends here ---------------------------------- 

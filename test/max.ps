@@ -1,0 +1,22 @@
+%!PS
+%
+% Copyright (c) 2018, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test the max operator
+
+(psconfig.ps) run
+
+(lib/math.ps) require
+(lib/psunit.ps) require
+
+ 8  1 max (first one is greater ) 8 assert.msg.EQ
+ 2  7 max (second one is greater) 7 assert.msg.EQ
+ 0  1 max (compare to zero      ) 1 assert.msg.EQ
+ 0 -1 max (compare to negative  ) 0 assert.msg.EQ
+ 2 -2 max (compare pos and neg  ) 2 assert.msg.EQ
+-2  2 max (compare neg and pos  ) 2 assert.msg.EQ
+
+showstack
+psunit.summary
+
+% test/psunit.ps ends here -----------------------------------------

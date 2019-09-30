@@ -1,0 +1,47 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test string handling
+
+(psconfig.ps) run
+
+(lib/string.ps) require
+(lib/psunit.ps) require
+
+%....:....|....:v...|...:....|
+(abcdefghijklmnopqrstuvwxyz) 16 string.head
+(head part matches) (abcdefghijklmnop) assert.msg.EQ
+(tail part matches) (qrstuvwxyz) assert.msg.EQ
+
+(a) 17 string.head
+(string too short)  (a) assert.msg.EQ
+(tail part matches) () assert.msg.EQ
+
+() 18 string.head
+(empty string)  () assert.msg.EQ
+(tail part matches) () assert.msg.EQ
+
+(....:...10....:...20....:...30....:...40....:...50....:...60....:...70....:...80....:...90....:..100....:..110....:..120....:..130..)
+{
+    16 string.head logln
+    dup length 0 eq { pop  exit } if
+} loop
+
+(a) (bc) concat (abc) assert.EQ
+() (bc)  concat (bc)  assert.EQ
+(a) ()   concat (a)   assert.EQ
+
+(a) (b) concat (c) concat
+(cascaded concat) (abc) assert.msg.EQ
+
+(123456789) (456) (abc) string.replace.all
+    dup (123abc789) assert.EQ
+
+    (456) (abc) string.replace.all
+    (123abc789) assert.EQ
+
+showstack
+psunit.summary
+
+% string.ps ends hee -----------------------------------------------

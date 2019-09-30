@@ -1,0 +1,55 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% block.ps - test block structuring commands
+
+(psconfig.ps) run
+(lib/log.ps) require
+(lib/block.ps) require
+
+/msg.def (global defined) def
+currentdict /msg.currentdict (global currentdict) put
+
+(**** global ****) logln
+(**** msg.def ****                 ) log msg.def logln
+(**** msg.currentdict ****         ) log msg.currentdict logln
+
+block
+    (**** local-1 ****) logln
+    /msg.def (local-1 defined) def
+    currentdict /msg.currentdict (local-1 currentdict) put
+
+    (     **** msg.def ****            ) log msg.def logln
+    (     **** msg.currentdict ****    ) log msg.currentdict logln
+    /abc (def) defaultTo
+    /abc where {
+	(     **** abc is defined  ****    ) logstack
+	(     ****     currentdict ****    ) logln currentdict log.keys
+	(     ****        userdict ****    ) logln    userdict log.keys
+	pop
+    } {
+	(     **** abc is not defined **** ) logstack
+    } ifelse
+leave
+
+(**** global again ****) logln
+(**** msg.def ****                 ) log msg.def logln
+(**** msg.currentdict ****         ) log msg.currentdict logln
+
+block
+    (**** local-2 ****) logln
+    /msg.def-2 (local-2 defined) def
+    currentdict /msg.currentdict-2 (local-2 currentdict) put
+
+    (     **** msg.def-2 ****          ) log msg.def-2 logln
+    (     **** msg.currentdict-2 ****  ) log msg.currentdict-2 logln
+    currentdict
+leave
+(**** AFTER leave ****) logstack log.keys
+
+(**** global again ****) logln
+(**** msg.def ****                 ) log msg.def logln
+(**** msg.currentdict ****         ) log msg.currentdict logln
+
+% test/block.ps ends here ------------------------------------------

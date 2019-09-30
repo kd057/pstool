@@ -1,0 +1,316 @@
+%!PS
+
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% jpeg.analyze.ps - extract meta data from a jpeg file
+
+(psconfig.ps) run
+
+(lib/log.ps) require
+(lib/string.ps) require
+(lib/jpegmarkers.ps) require
+(lib/hd.ps) require
+(lib/jpeg.segments.log.ps) require
+(lib/file.ps) require
+
+% dictionary of type specific handlers; missing handlers are replaced by "handle.segment"
+/jpeg.marker.handle <<
+    /DHT	/handle.indexed.segment
+    /DQT	/handle.indexed.segment
+>> def
+
+% ------------------------------------------------------------------
+%	program properties
+% ------------------------------------------------------------------
+
+% ------------------------------------------------------------------
+%	dictionary of jpeg properties
+% ------------------------------------------------------------------
+
+/jpeg.props.init {
+    /jpeg.props 32 dict def 
+    % no meta data defined yet ...
+    /jpeg.end.of.meta.data false def
+} def
+
+% display the jpeg.props dictionary, if called with a TRUE argument
+% bool --> |
+/jpeg.props.log {
+    { % if true
+	jpeg.props /SOI known {
+	    jpeg.props {
+		jpeg.segment.log
+	    } forall
+	} {
+	    (**** not a valid JPEG file: SOI missing ****) log
+	    jpeg.props length 0 eq {
+		( - dictionary is empty) logln
+	    } {
+		jpeg.props log.keys
+	    } ifelse
+	} ifelse
+    } { % else
+	jpeg.props /SOI known not {
+	    (**** not a valid JPEG file: SOI missing ****) logln
+	} if
+    } ifelse
+} def
+
+% add an entry to jpeg.props dictionary - raise an error on duplicates
+% there might be multiples segments, e.g. DQT, but we do not yet have an example
+% key value --> | % added to jpeg.props
+/jpeg.props.put {
+    jpeg.props 2 index known {
+	(**** WARNING **** multiple segments: ) log
+	1 index log
+	( **** existing entry will be overwritten ****) logln
+    } if
+
+    jpeg.props 3 1 roll 	% dict key value
+    put
+} def
+
+% file is positioned at segment length - get the length of the segment content
+% file symbol --> length    % negative values indicate an error
+/get.segment.length {
+    dup jpeg.marker.seglen exch known {	% file symbol bool
+	jpeg.marker.seglen exch get	% file value
+	dup 0 ge {			% file value
+	    exch pop			% value
+	} {				% file value<0
+	    pop read.word		% 2nd-byte 1st-byte bool
+	    {
+		256 mul add		% length
+		2 sub			% remaining-length
+	    } {				%
+		pop -1			% -1
+	    } ifelse			
+	} ifelse
+    } {
+	-1
+    } ifelse
+} def
+
+% file is positioned at segment length - get the segment content
+% file symbol --> string bool
+/get.segment {
+    1 index exch			% file file symbol
+    get.segment.length			% file length
+    dup 0 ne {
+	string readstring		% segment bool
+    } {
+	pop pop				% -
+	() true				% empty-string bool
+    } ifelse
+} def
+
+% handle arbitrary segment
+% file symbol --> bool
+/handle.segment {		% file symbol
+    dup 2 index exch		% file symbol file symbol
+    get.segment			% file symbol value bool
+    {
+	2 copy			% file symbol value symbol value
+	jpeg.segment.log	% file symbol value
+	jpeg.props.put		% file
+	pop true		% true
+    } {				% file symbol
+	pop pop false		% false
+    } ifelse
+} def
+
+% store a segment value in a dictionary
+% symbol segment --> |
+/jpeg.props.put.indexed {
+    jpeg.props 2 index known {	% symbol segment
+	jpeg.props 2 index get 	% symbol segment segment-dict
+	/segment.dict exch def	% symbol segment
+    } {	% symbol not known - create a dictionary
+	8 dict			% symbol segment segment-dict
+	/segment.dict exch def	% symbol segment
+    } ifelse
+    % symbol segment
+
+    segment.dict exch		% symbol segment.dict segment
+    dup 0 get exch put 		% symbol
+    jpeg.props exch		% props-dict symbol
+    segment.dict put		% -
+} def
+
+% specific handler for segments, that might occur more than once
+% file symbol --> bool
+/handle.indexed.segment {
+    dup 2 index exch		% file symbol file symbol
+    get.segment			% file symbol segment bool
+    {
+	2 copy			% file symbol value symbol value
+	jpeg.segment.log	% file symbol segment
+	jpeg.props.put.indexed	% file
+	pop true		% true
+    } {				% file symbol
+	pop pop false		% false
+    } ifelse
+} def
+
+% for debugging
+%    (**** jpeg.marker.handle ****) log
+%    jpeg.marker.handle log
+
+% jpegdump.not.a.segment - a jpeg marker has been epected, but something else was found
+% file 2nd-byte 1st-byte --> message false
+/jpegdump.not.a.segment {
+    3 string cvs		% file 2nd-byte 1st-byte
+    exch 3 string cvs		% file 1st-byte 2nd-byte
+    exch ( ) concat exch concat	% file bytes
+    (expected a jpeg marker, but found: )	% file bytes message
+    exch concat exch		% message file
+    fileposition 2 sub		% message position
+    6 string cvs		% message position
+    (, at: ) exch concat	% message position
+    concat false		% message false
+} def
+
+% jpegdump.handle - executes the segment handle of known segment type
+% file symbol --> true | message false
+/jpegdump.handle {
+    dup				% file symbol symbol
+    jpeg.marker.handle exch known {	% file symbol
+	dup			% file symbol symbol
+	jpeg.marker.handle exch get 	% file symbol handler
+	cvx exec
+    } {				% file symbol
+	debugging {
+	    dup 5 string cvs	% file symbol symbol
+	    (**** calling default handler for: )	% file symbol symbol message
+	    log logln		% file symbol
+	} if
+	handle.segment		% true | message false
+    } ifelse
+} def
+
+/jpeg.end.of.meta.data false def
+
+% jpegdump.segment - displays the content of a jpeg segment
+% file type marker --> true | message false
+/jpegdump.segment {
+    dup 16#ff eq {		% file type marker
+	pop			% file type
+	{ % skip sequences of 16#ff
+	    dup 16#ff eq {	% file type bool
+		(***** SKIPPING 16#ff ****) logln
+		1 index read	% file type new-type
+		dup 16#ff ne {	% file type new-type bool
+		    exch pop	% file new-type
+		    exit
+		} if	
+	    } {
+		exit
+	    } ifelse
+	} loop
+
+	dup				% file type type
+	jpeg.marker exch known {	% file type
+	    jpeg.marker exch get	% file typesymbol
+	    dup /SOS eq { /jpeg.end.of.meta.data true def } if
+	    jpegdump.handle		% true | message false
+	} {				% file type
+	    jpegdump.unknown.type	% message false
+	} ifelse
+    } {
+	jpegdump.not.a.segment		% message false
+    } ifelse
+} def
+
+% jpegdump.unknown,type - expected a known jpeg type, but got something else
+% file type --> message false
+/jpegdump.unknown.type {
+    3 string cvs	% file type
+    (**** unknown segment type: )	% file type message
+    exch concat		% file message
+    exch pop false	% message false
+} def
+
+/jpegdump.filename (-- undefined jpeg file --) def
+
+% jpegdump.readerr - report an error when reading from a jpeg file
+% file filename --> message false
+/jpegdump.readerr {
+    1 index status {		% file filename bool
+	(failed to read jpeg marker at: ) % file filename message
+	2 index fileposition	% file filename message position
+	6 string cvs		% file filename message position
+	concat			% file filename message
+	( of ) concat		% file filename message
+	concat			% file message
+	exch pop 		% message
+    } {				% file filename
+	pop pop			% -
+	(failed to determine fileposition of: )	% message
+	jpegdump.filename concat	% message
+    } ifelse
+    false			% message false
+} def
+
+% jpegdump.word - read a word
+% file --> 2nd-byte 1st-byte true | message false
+/jpegdump.word {
+    dup read.word		% file 2nd-byte 1st-byte true | file false
+    {				% file 2nd-byte 1st-byte
+	true			% file 2nd-byte 1st-byte true
+    } {				% file
+	jpegdump.filename jpegdump.readerr	% file message false
+    } ifelse
+} def
+
+% extract and return the dimensions of a jpeg image
+% filename --> width height bpp
+/jpeg.dimensions {
+    dup				% filename filename
+    (analyzing jpeg file: ) log logln	% filename
+
+    jpeganalyze {		% true | message false
+	% force a verbose execution
+	jpeg.props get.SOF	% SOF-segment symbol
+	pop			% SOF-segment
+	3 scan.word		% SOF-segment index width
+	3 1 roll pop		% width SOF-segment
+	1 scan.word		% width SOF-segment index height
+	3 1 roll pop		% width height SOF-segment index
+	0 scan.byte 		% width height SOF-segment index bpp
+	exch pop		% width height SOF-segment bpp
+	exch pop		% width height bpp
+    } {				% filename message
+	logln
+	(FAILED to determine jpeg dimensions: ) log logln
+	stop
+    } ifelse
+} def
+
+% jpeganalyze - create the jpeg.props dictionary 
+% filename --> true | message false
+/jpeganalyze {
+    jpeg.props.init
+    /jpegdump.filename exch def % filename
+    jpegdump.filename (r) file	% file
+    { % loop over jpeg segments in file
+	dup jpegdump.word	% file 2nd-byte 1st-byte true | file message false
+	{			% file 2nd-byte 1st-byte
+	    jpegdump.segment	% true | message false
+	} {
+	    false		% message false
+	} ifelse
+	not {			% message
+	    exch pop false exit % message false
+	} if			% file
+
+ 	jpeg.end.of.meta.data {	% file
+	    pop			% -
+	    % all meta data have been read - signal success
+	    jpeg.props /.jpeg.meta true put
+	    true exit		% true
+	} if
+
+    } loop
+} def
+
+% jpeg.analyze.ps --------------------------------------------------

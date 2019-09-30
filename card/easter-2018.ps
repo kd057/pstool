@@ -1,0 +1,41 @@
+%!PS
+%
+% Copyright (c) 2018, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% display a photo
+
+(psconfig.ps) run
+
+(lib/show.ps) require
+(lib/log.ps) require
+
+(lib/latinize.ps) require
+(lib/photo/showphoto.ps) require
+(card/layout.ps) require
+
+layout begin
+    pageWidth				% width
+    pageHeight				% height
+    0					% llx
+    0					% lly
+    /fname (pics/card/cimg5566.jpg) def
+    currentdict position.photo
+
+    /showClipMarks	false	def
+    /isFramed		false	def
+    /isFixedPosition	true	def
+    /llx 0 def
+
+    photo.display
+
+    /Helvetica-Oblique-ISO8859 findfont 16 scalefont setfont
+    pageWidth 3 mul 4 div
+    pageHeight 2 div
+    moveto
+    (Frohe Ostern) cc.show
+    showpage
+end
+
+(left overs) logstack
+
+% card/easter-2018.ps ----------------------------------------------

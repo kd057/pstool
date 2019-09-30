@@ -1,0 +1,150 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% calculate easter
+
+(psconfig.ps) run
+
+(lib/calendar/caldata.ps) require
+(lib/calendar/easter.ps) require
+(lib/utf8.ps) require
+
+% additional operators
+(lib/dictionary.ps) require
+
+% this module uses three maps - the first two depending on the current year:
+%    DAY.TO.SYMBOL	daynumber -> symbol
+%    SYMBOL.TO.DAY	symbol -> daynumber
+% the third map is globally valid
+%    DAYNAME		symbol -> dayname (string)
+
+/DAY.TO.SYMBOL 1 dict def
+/DAYNAME 1 dict def
+/SYMBOL.TO.DAY 1 dict def
+
+% create a map of symbols to day numbers - only for fixed dates,
+% but including EASTER, as this is required for some derived dates
+% year -> | %% creates entries in SYMBOL.TO.DATE and DAY.TO.SYMBOL
+% *** this is only one part of the initialization - ***
+% *** an application should call setup.day.maps     ***
+/setup.fixed.dates {
+	SYMBOL.TO.DAY 1			   /NEWYEAR 	exch put
+	SYMBOL.TO.DAY 6			   /EPIPHANY	exch put
+
+    dup SYMBOL.TO.DAY exch  3  8 dayOfYear /WOMENS.DAY	exch put
+
+    dup SYMBOL.TO.DAY exch  5  1 dayOfYear /LABORDAY	exch put
+
+    dup SYMBOL.TO.DAY exch  8 15 dayOfYear /ASSUMPTION.DAY exch put
+
+    dup SYMBOL.TO.DAY exch 10  3 dayOfYear /UNITYDAY	exch put
+    dup SYMBOL.TO.DAY exch 10 31 dayOfYear /REFORMATION	exch put
+
+    dup SYMBOL.TO.DAY exch 11  1 dayOfYear /ALLSAINTS	exch put
+
+    dup SYMBOL.TO.DAY exch 12 24 dayOfYear /HOLYNIGHT	exch put
+    dup SYMBOL.TO.DAY exch 12 25 dayOfYear /CHRISTMAS	exch put
+    dup SYMBOL.TO.DAY exch 12 26 dayOfYear /SAINTSTEPHEN exch put
+    dup SYMBOL.TO.DAY exch 12 31 dayOfYear /SILVESTER	exch put
+
+    dup SYMBOL.TO.DAY exch easterDay	   /EASTER	exch put
+
+    pop % year
+} def
+
+% add dependend days to the SYMBOL.TO.DAY map
+% | -> |
+/setup.dependend.dates {
+    SYMBOL.TO.DAY begin
+	SYMBOL.TO.DAY /ASHWEDNESDAY 	EASTER 46 sub	put
+	SYMBOL.TO.DAY /GOODFRIDAY 	EASTER  2 sub	put
+	SYMBOL.TO.DAY /EASTERMONDAY 	EASTER  1 add	put
+	SYMBOL.TO.DAY /ASCENSION 	EASTER 39 add	put
+	SYMBOL.TO.DAY /PENTECOST 	EASTER 49 add	put
+	SYMBOL.TO.DAY /WHITMONDAY 	EASTER 50 add	put
+	SYMBOL.TO.DAY /CORPUSCHRISTI 	EASTER 60 add	put
+    end
+} def
+
+% setup the reverse map to DAY.TO.SYMBOL, mapping symbols to day numbers
+% *** this is only one part of the initialization - ***
+% *** an application should call setup.day.maps     ***
+% | -> |
+/setup.SYMBOL.TO.DAY {
+    DAY.TO.SYMBOL {
+	exch SYMBOL.TO.DAY 3 1 roll put
+    } forall
+} def
+
+% setup the reverse map to DAY.TO.SYMBOL, mapping symbols to day numbers
+% *** this is only one part of the initialization - ***
+% *** an application should call setup.day.maps     ***
+% | -> |
+/setup.DAY.TO.SYMBOL {
+    SYMBOL.TO.DAY {
+	exch DAY.TO.SYMBOL 3 1 roll put
+    } forall
+} def
+
+% initiate the map of daynames
+% | -> |
+/setup.DAYNAME {
+    DAYNAME /ALLSAINTS		  (Allerheiligen)			put
+    DAYNAME /ASCENSION		[ (Christi)	(Himmelfahrt) ]		put
+    DAYNAME /ASHWEDNESDAY	  (Aschermittwoch)			put
+    DAYNAME /CHRISTMAS		[ (Weih\255)	(nachten) ]		put
+    DAYNAME /CORPUSCHRISTI	  (Fronleichnam)			put
+    DAYNAME /EASTER		  (Ostern)				put
+    DAYNAME /EASTERMONDAY	[ (Oster\255)	(montag) ]		put
+    DAYNAME /EPIPHANY		  (Hl. 3 Könige) utf8			put
+    DAYNAME /GOODFRIDAY		  (Karfreitag)				put
+    DAYNAME /HOLYNIGHT		[ (Heilig)	(Abend)	]		put
+    DAYNAME /LABORDAY		[ (Tag der)	(Arbeit) ]		put
+    DAYNAME /NEWYEAR		  (Neujahr)				put
+    DAYNAME /PENTECOST		  (Pfingsten)				put
+    DAYNAME /REFORMATION	  (Reformation)				put
+    DAYNAME /SAINTSTEPHEN	[ (Stephans\255)(tag) ]			put
+    DAYNAME /SILVESTER		  (Silvester)				put
+    DAYNAME /UNITYDAY		[ (Tag der)	(Deutschen) (Einheit) ] put
+    DAYNAME /WHITMONDAY		[ (Pfingst\255) (montag) ]		put
+    DAYNAME /WOMENS.DAY		[ (int. Tag)	(der Frau) ]		put
+    DAYNAME /ASSUMPTION.DAY	[ (Mariä) utf8	(Himmelfahrt) ]		put
+    DAYNAME /REPENTANCE		[ (Buß- und) utf8    (Bettag) ]        	put
+} def
+
+% setup all dictionaries for day mappings
+% initializes dictionaries: DAY.TO.SYMBOL, SYMBOL.TO.DAY, DAYNAME
+% aborts on failure
+% year country variant -> | % creates MAP.HOLIDAY
+/setup.day.maps {
+    /COUNTRY.VARIANT exch def	% year country
+    /COUNTRY exch def		% year
+
+    % empty holiday dictionaries ...
+    DAY.TO.SYMBOL empty.dict	% year
+    SYMBOL.TO.DAY empty.dict	% year
+
+    % ... and refill
+    dup setup.fixed.dates	% year
+    setup.dependend.dates	% year
+    setup.DAY.TO.SYMBOL		% year
+    setup.DAYNAME         	% year
+    COUNTRY COUNTRY.VARIANT country.holidays	% |
+} def
+
+% year daynum -> name true | false
+/dayname? {
+    exch pop dup		% daynum daynum %% year is currently ignored
+    DAY.TO.SYMBOL exch known	% daynum bool
+    {
+	DAY.TO.SYMBOL exch get	% symbol
+	DAYNAME exch get	% string-or-array
+	true
+    } {
+	pop
+	false
+    } ifelse
+} def
+
+% specialdays.ps ends here -----------------------------------------

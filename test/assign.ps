@@ -1,0 +1,26 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% assign.ps - test the assign operator
+
+(psconfig.ps) run
+(lib/log.ps) require
+(lib/block.ps) require
+
+/msg.def (global defined) def
+
+(**** global ****) logln
+(**** msg.def - global ****        ) log msg.def logln
+
+block
+    (**** local-1 ****) logln
+    /msg.def (local-1 defined) assign
+
+    (     **** msg.def - lobal ****    ) log msg.def logln
+leave
+
+(**** global again  ****) logln
+(**** msg.def - global ****        ) log msg.def logln
+
+% test/assign.ps ends here -----------------------------------------

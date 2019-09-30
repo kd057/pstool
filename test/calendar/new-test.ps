@@ -1,0 +1,72 @@
+%!PS
+
+% Copyright (c) 2019, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% load the tools library
+(psconfig.ps)   run
+(lib/log.ps)   require
+(lib/utf8.ps)   require
+
+% this year's photos
+(calendar/photos-2020-frankfurt.ps) require
+
+% load the main calendar utility
+(lib/calendar/calendar.ps)   require
+
+% derived from /showMonth
+% print all days of a month at the current position
+% year month --> |
+/getHolidays {
+    % number of the first day in current month
+    2 copy 1 dayOfYear dup			% year month daynum.1st daynum.1st
+
+    % loop over all day of this month
+    3 index 3 index monthdays			% year month daynum.1st daynum.1st days.in.month
+    1 index add 1 sub				% year month daynum.1st daynum.1st daynum.last
+    1 exch					% year month daynum.1st daynum.1st 1 daynum.last
+    { % for					% 
+	dup is.a.holiday? {			% year month daynum.1st bool
+						% year month daynum.1st daynum
+	    % ----------- display date -----------
+	    2 copy exch sub 1 add log (.) log
+	    CURMONTH log (.) log
+	    CURYEAR log
+	    (  -->  ) log
+	    % ----------- display date -----------
+	    dup 3 index exch			% year month daynum.1st year daynum
+	    dayname? {				% year month daynum.1st (dayname true | false)
+		dup type /arraytype eq {	% year month daynum.1st [dayname]
+		    {				% year month daynum.1st component
+			log (+) log		% year month daynum.1st
+		    } forall			% year month daynum.1st
+		} {				% year month daynum.1st dayname
+		    log				% year month daynum.1st
+		} ifelse			% year month daynum.1st
+		log.ln				% year month daynum.1st
+	    } {
+	    	(*** NOT A DAYNAME ***) logln	% year month daynum.1st
+	    } ifelse				% year month daynum.1st
+	} {
+	} ifelse
+	pop % loop-index			% year month daynum.1st
+    } for					% year month daynum.1st
+    pop pop pop %
+} def
+
+% ================================= %
+%                                   %
+    /COUNTRY		(DE) def
+    /COUNTRY.VARIANT	(BW) def
+    2017 6 month.first
+%                                   %
+% ================================= %
+
+36 {			% month
+    % pop				% |
+    month.next			% year month
+    getHolidays
+} repeat
+
+(left overs) logstack
+
+% new-test.ps ends here --------------------------------------------

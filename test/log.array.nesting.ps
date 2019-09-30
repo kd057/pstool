@@ -1,0 +1,38 @@
+%!PS
+%
+% Copyright (c) 2019, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test logging / check nesting of arrays
+
+(psconfig.ps) run
+
+(lib/log.ps) require
+(lib/psunit.ps) require
+
+/nesting.maxlevel 2 def
+
+[
+    (level-1 1st)
+    [
+	(level-2)
+    ]
+    (level-1 2nd)
+    [
+	[
+	    (level-3 1st)
+	]
+	(level-2 2nd)
+	[
+	    (level-3 2nd)
+	    [
+		(level-4 1st)
+	    ]
+	]
+	(level-2 3rd)
+    ]
+] logln
+
+showstack
+psunit.summary
+
+% test/log.array.nesting.ps ends here ------------------------------

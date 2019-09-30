@@ -1,0 +1,60 @@
+%!PS
+%
+% Copyright (c) 2019, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+
+%%BeginSetup
+%%BeginFeature: *Duplex false
+<< /Duplex false >> setpagedevice
+%%EndFeature
+%%EndSetup
+
+% load the tools library
+(psconfig.ps)   run
+(lib/log.ps)   require
+(lib/utf8.ps)   require
+
+% ============= CONFIG ============= %
+%                                    %
+%   this year's photos
+    (calendar/photos-2020-frankfurt.ps) require
+%                                    %
+% ================================== %
+
+% title page
+(lib/calendar/title.ps) require
+
+% load the main calendar utility
+(lib/calendar/calendar.ps)   require
+
+% configure photo display
+/isFramed	false def
+/isClipped	false def
+/showClipMarks	false def
+
+layoutStatus
+
+% ============= CONFIG ============= %
+%                                    %
+    /COUNTRY		(DE) def
+    /COUNTRY.VARIANT	(HE) def
+    2020 01 month.first
+    CURYEAR COUNTRY COUNTRY.VARIANT country.holidays
+    title.page.grid showpage
+%                                    %
+% ================================== %
+
+all-photos {
+    month.next oneSheet showpage
+} forall
+
+(URLs to check:) logln
+URLS {
+    logln pop
+} forall
+
+coilStatus
+
+(left overs) logstack
+
+% frankfurt-2020.ps ends here --------------------------------------

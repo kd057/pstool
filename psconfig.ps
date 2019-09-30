@@ -1,0 +1,59 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% psconfig.ps - definitions and operators to configure and organize .ps code
+% !!! DO NOT USE THE log.ps OPERATORS HERE !!!
+
+% set to true, to get additional details about jpeg images and other stuff ...
+/debugging false def % should really be off, or not be global, or ...
+
+/.verbose where { pop } {
+    /.verbose false def
+    .verbose { (==== .verbose is turned on in: psconfig.ps ====) print }  if
+} ifelse
+
+/__required_libs where { pop } {
+    % create missing dictionary, add myself to it
+    /__required_libs 8 dict def
+    __required_libs (psconfig.ps) /psconfig.ps put
+} ifelse
+
+% require - conditionally load .ps modules
+% string require --> | % file is loaded
+/require {
+    dup			% (name) (name)
+    __required_libs	% (name) (name) dict
+    exch		% (name) dict (name)
+    known		% (name) true/false
+    {			% (name)
+	.verbose {	% (name)
+	    (... is known) exch print print (\n) print % |
+	} {
+	    pop		% |
+	} ifelse	% |
+    } {
+	dup		% (name) (name) (name)
+	.verbose {	% (name) (name) (name)
+	    dup (... defining) exch print print (\n) print % |
+	} if
+	__required_libs	% (name) (name) dict
+	exch		% (name) dict (name)
+	dup cvn		% (name) dict (name) name
+	put		% (name)
+	.verbose {
+	    dup (... running) exch print print (\n) print % |
+	} if
+	run
+    } ifelse
+} def
+
+% expect - indicate that some .ps modules might be loaded dynamically
+% the build.dep script will evaluate these statements and include any
+% files matching the pattern
+% pattern expect --> | % no-op
+/expect {
+    pop
+} def
+
+% psconfig.ps ends here --------------------------------------------

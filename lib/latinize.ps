@@ -1,0 +1,24 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% use ISO 8859 in encodings
+% found in: http://stackoverflow.com/questions/270672/unicode-in-postscript 
+
+/latinize {
+    findfont
+    dup length dict begin
+    {
+	1 index /FID
+	ne {def}{pop pop} ifelse
+    }forall
+    /Encoding ISOLatin1Encoding def
+    currentdict
+    end
+    definefont pop
+} bind def
+
+/Helvetica-ISO8859 /Helvetica latinize
+/Helvetica-Bold-ISO8859 /Helvetica-Bold latinize
+/Helvetica-Oblique-ISO8859 /Helvetica-Oblique latinize
+/Helvetica-BoldOblique-ISO8859 /Helvetica-BoldOblique latinize

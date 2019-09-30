@@ -1,0 +1,320 @@
+%!PS
+
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% jpeg.segments.log - provide a readable dump of jpeg file segments
+
+(psconfig.ps) run
+
+(lib/log.ps) require
+(lib/array.ps) require
+
+% dictionary of type specific handlers; missing handlers are replaced by "handle.segment"
+/jpeg.segment.handlers <<
+    /APP0	/log.APP0
+    /APP1	/log.APP1
+    /DQT	/log.DQT
+    /COM	/log.COM
+    /SOI	/log.SOI
+    /DHT	/log.DHT
+    /SOF0	/log.SOF
+    /SOF2	/log.SOF
+    /SOS	/log.SOS
+>> def
+
+debugging { jpeg.segment.handlers log.dict } if
+
+% jpeg.segment.handle - display the contents of a jpeg segment
+% type content --> |
+/jpeg.segment.log {
+    .verbose {
+	(JPEG segment: ) log 1 index log % type content
+	jpeg.segment.handlers 		% type content dict
+	2 index known {			% type content bool
+	    log.ln			% type content
+	    jpeg.segment.handlers 	% type content dict
+	    2 index get			% type content operator
+	    cvx exec			% type
+	} {
+	    ( - no specific handler) logln	% type content
+	    (      value:  ) log logln	% type
+	} ifelse
+	pop				% |
+    } {					% type content
+	pop pop
+    } ifelse
+} def
+
+/line.prefix (     +-- ) def
+
+% log.APP0 - display the contents of an APP0 segment
+% content --> |
+/log.APP0 {
+    % 5 bytes identifier
+    line.prefix log
+    dup 0 5 getinterval		% content substring
+    (JFIF\000) ne { (not a ) log } if (JFIF) logln
+
+    % start index for scan.* operators
+    5
+
+    % 1 byte major version - should be 1, otherwise error
+    line.prefix log (major version: ) log
+    scan.byte logln
+
+    % 1 byte minor version - should be 0..2, otherwise error
+    line.prefix log (minor version: ) log
+    scan.byte logln
+
+    % 1 byte x/y units - 0 no units, 1 = dots/inch, 2=dots/cm
+    line.prefix log (x/y units: ) log
+    scan.byte logln
+
+    % 2 bytes X density	- should be != 0
+    line.prefix log (X density: ) log
+    scan.word logln
+
+    % 2 bytes Y density	- should be != 0
+    line.prefix log (Y density: ) log
+    scan.word logln
+
+    % 1 byte thumbnail width
+    line.prefix log (thumbnail width: ) log
+    scan.byte dup logln
+    /APP0.thumbnail.width exch def
+
+    % 1 byte thumbnail height
+    line.prefix log (thumbnail height: ) log
+    scan.byte dup logln
+    /APP0.thumbnail.height exch def
+
+    % n bytes = w * h * 3 bytes for thumbnail
+    APP0.thumbnail.width APP0.thumbnail.height mul
+    3 mul dup 0 ne {
+	line.prefix log (thumbnail size: ) log logln
+    } {
+	pop
+	line.prefix log (no thumbnail) logln
+	1 index length 14 ne {
+	    line.prefix log
+	    (APP0 contains unrecognized data; ) log
+	    (should be: ) log 15 log
+	    (, but is; ) log dup length logln
+	} if
+    } ifelse
+
+    %   If there's no 'JFIF'#0, or the length is < 16, then it is probably
+    %   not a JFIF segment and should be ignored.
+    %
+    %   Normally units=0, x-dens=1, y-dens=1, meaning that the aspect ratio
+    %   is 1:1 (evenly scaled).
+    %
+    %   JFIF files including thumbnails are very rare, the thumbnail can
+    %   usually be ignored.  If there's no thumbnail, then width=0 and
+    %   height=0.If the length doesn't match the thumbnail size, a warning
+    %   may be printed, then continue decoding.
+    %
+
+    pop pop
+} def
+
+% log.APP1 - display the contents of an APP1 segment
+% content --> |
+/log.APP1 {
+    % 5 bytes identifier
+    line.prefix log
+    dup 0 6 getinterval		% Exif header
+    (Exif\000\000) ne { (not a ) log } if (Exif) logln
+
+    line.prefix log
+    dup 6 2 getinterval		% TIFF header
+    (MM) eq { (big) } { (little) } ifelse
+    log ( endian) logln
+
+    line.prefix log
+    (skipped ....) logln
+
+    pop
+} def
+
+% log.DQT - display the contents of a DQT property
+% content --> |
+/log.DQT {
+    dup type /dicttype eq {	% content
+	{			% content key value
+	    exch pop		% content value
+	    log.DQT.raw		% content
+	} forall
+    } {
+	log.DQT.raw		% |
+    } ifelse
+} def
+
+% log.DQT.raw - display the contents of a single DQT segment
+% content --> |
+/log.DQT.raw {
+    % start index for scan.*
+    0
+
+    % number of quantization table
+    line.prefix log (quantization table: ) log
+    scan.byte logln
+
+    % size of quantization table
+    line.prefix log (table size: ) log
+    1 index length 1 sub logln
+
+    pop pop
+} def
+
+% log.COM - display the contents of a COM segment / comment
+% content --> |
+/log.COM {
+    line.prefix log (comment: ) log
+    dup logln
+
+    pop
+} def
+
+% log.SOI - display the SOI segment
+% content --> |
+/log.SOI {
+    line.prefix log (SOI - initial jpeg marker, no content) logln
+
+    pop
+} def
+
+% log.DHT - display the contents of a DHT property
+% content --> |
+/log.DHT {
+    dup type /dicttype eq {	% content
+	{			% content key value
+	    exch pop		% content value
+	    log.DHT.raw		% content
+	} forall
+    } {
+	log.DHT.raw		% |
+    } ifelse
+} def
+
+% log.DHT.raw - display the contents of a single DHT segment
+% content --> |
+/log.DHT.raw {
+    % start index for scan.*
+    0
+
+    % HT information
+    line.prefix log (Huffman table: ) log
+    scan.byte log log.ln
+
+    % number of symbols with codes of length 1..16
+    line.prefix log (number of symbols: ) logln
+    line.prefix log (         \(len/cnt\) ) log
+
+    1 1 16 {				% content index count
+	( ) log log (/) log		% content index
+	scan.byte log			% content index
+    } for
+    log.ln
+
+    (**** !! there are still open questions regarding the DHT content !! ****) logln
+    pop pop
+} def
+
+/log.SOF { log.SOF0 } def
+
+% log.SOF0 - display the contents of a SOF0 segment / start of frame (baseline DCT)
+% content --> |
+/log.SOF0 {
+    % start index for scan.*
+    0
+
+    line.prefix log (Data precision   : ) log	% content index
+    scan.byte logln				% content index
+
+    line.prefix log (Image height     : ) log	% content index
+    scan.word logln				% content index
+
+    line.prefix log (Image width      : ) log	% content index
+    scan.word logln				% content index
+
+    line.prefix log (# components     : ) log	% content index
+    scan.byte dup logln				% content index
+    /no.of.components exch def			% content index
+
+    1 1  no.of.components {		% content index count
+	line.prefix log			% content index count
+	(               ) log		% content index count
+	log ( : ) log			% content index
+
+	scan.byte logx ( ) log		% content index
+	scan.byte logx ( ) log		% content index
+	scan.byte logx ( ) log		% content index
+
+	log.ln				% content index
+    } for
+
+    1 index length (data length: ) log log (, next: ) log dup logln
+
+    pop pop
+} def
+
+% get.SOF - returns either SOF0 or SOF2 from a dictionary
+% dict --> segment symbol
+/get.SOF {
+    dup /SOF0 known {		% dict bool
+	/SOF0 get		% segment
+	/SOF0			% segment symbol
+    } {				% dict
+	dup /SOF2 known {	% dict bool
+	    /SOF2 get		% segment
+	    /SOF2		% segment symbol
+	} {
+	    (**** neither SOF0 nor SOF2 found in dictionary ****) logln
+	    stop
+	} ifelse
+    } ifelse
+} def
+
+% log.SOF2 - display the contents of a SOF2 segment / start of frame (progressive DCT)
+% content --> |
+/log.SOF2 {
+    (**** !! missing specification - said to be unsupported !! ****) logln
+    pop
+} def
+
+% log.SOS - display the contents of a SOS segment / start of scan
+% content --> |
+/log.SOS {
+    % start index for scan.*
+    0					% content index
+
+    line.prefix log			% content index
+    (number of components: ) log	% content index
+    scan.byte dup logln			% content index count
+    /no.of.components exch def			% content index
+
+
+    1 1  no.of.components {		% content index count
+	line.prefix log			% content index count
+	(               ) log		% content index count
+	log ( : ) log			% content index
+
+	scan.byte logx ( ) log		% content index
+	scan.byte logx ( ) log		% content index
+
+	log.ln				% content index
+    } for
+
+    1 index length exch sub 		% content skip
+    line.prefix log (expected to skip 3, ) log
+    dup 3 eq {				% content skip
+	pop				% content
+	(which is OK) logln		% content
+    } {
+	(but found: ) log logln		% content
+    } ifelse
+    pop					% |
+} def
+
+% jpeg.segments.log.ps----------------------------------------------

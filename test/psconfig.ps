@@ -1,0 +1,27 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test/psconfig.ps - definitions and operators to configure and organize .ps code
+
+(psconfig.ps) run
+
+% create and include a file ...
+/include.1 (test/.include.1.ps) def	% |
+include.1 (w) file			% file
+dup (true\n) writestring closefile	% |
+
+include.1 require {
+	(require: SUCCEEDED) =
+    } {
+	(require: FAILED) =
+    } ifelse
+
+include.1 deletefile			% |
+
+% test multiple inclusions
+(psconfig.ps) require
+(psconfig.ps) require
+(psconfig.ps) require
+
+% psconfig.ps ends here --------------------------------------------

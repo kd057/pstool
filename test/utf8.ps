@@ -1,0 +1,45 @@
+%!PS
+%
+% Copyright (c) 2018, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% utf8.ps - UTF8 conversion
+
+(psconfig.ps) run
+
+(lib/utf8.ps) require
+(lib/psunit.ps) require
+(lib/string.ps) require
+
+/source (there are umläüts in this string, similär tü finnish längüäge) def
+
+(*** source: ) log source logln
+
+/Helvetica-ISO8859 findfont 10 scalefont setfont
+
+10 10 moveto
+source show
+
+10 30 moveto
+source
+    (ä) utf8.replace
+    (ü) utf8.replace
+show
+
+10 40 moveto
+source utf8
+show
+
+10 50 moveto
+(<< >> ä ö ü Ä Ö Ü ß) utf8
+show
+
+10 60 moveto
+(no umlauts here, all is fine) utf8
+show
+
+showpage
+
+pstack
+psunit.summary
+
+% utf8.ps ends here ------------------------------------------------

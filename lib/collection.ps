@@ -1,0 +1,83 @@
+%!PS
+% 
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% collection.ps - collection specific functions
+    
+(psconfig.ps) run
+(lib/array.ps) require
+(lib/dictionary.ps) require
+(lib/log.ps) require
+
+% select elements from a collection matching a criterion
+% collection filter --> collection
+/select {
+    { % begin
+	1 index type /arraytype eq { array.select exit } if
+	1 index type /dicttype  eq { dict.select  exit } if
+
+	(**** select() - expected array or dictionary but found: ) log
+	24 string cvs logln
+	quit
+    } loop % end
+} def
+ 
+% similar to select, but return non-matching values as well
+% collection filter --> matching non-matching
+/select2 {
+    { % begin
+	1 index type /arraytype eq { array.select2 exit } if
+	1 index type /dicttype  eq { dict.select2  exit } if
+
+	(**** select2() - expected array or dictionary but found: ) log
+	24 string cvs logln
+	quit
+    } loop % end
+} def
+
+% select elements from a collection with values matching a criterion
+% collection select --> collection
+/select.value {
+    { % begin
+	1 index type /dicttype  eq { dict.select.value  exit } if
+
+	(**** select() - expected dictionary but found: ) log
+	24 string cvs logln
+	quit
+    } loop % end
+} def
+ 
+% similar to select2.value, but return non-matching values as well
+% collection filter --> matching non-matching
+/select2.value {
+    { % begin
+	1 index type /dicttype  eq { dict.select2.value  exit } if
+
+	(**** select2() - expected dictionary but found: ) log
+	24 string cvs logln
+	quit
+    } loop % end
+} def
+
+% orig --> duplicate
+/collection.dup {
+    <<
+	/arraytype	/array.dup
+	/dicttype	/dict.dup
+    >>				% collection1 collection2 dict
+    1 index type get		% collection1 collection2 function
+    cvx exec			% bool
+} def
+
+% compares two collections for equality
+% collection collection --> bool
+/collection.eq {
+    <<
+	/arraytype	/array.eq
+	/dicttype	/dict.eq
+    >>				% collection1 collection2 dict
+    1 index type get		% collection1 collection2 function
+    cvx exec			% bool
+} def
+
+% collection.ps ends here ------------------------------------------

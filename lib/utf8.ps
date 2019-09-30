@@ -1,0 +1,56 @@
+%!PS
+%
+% Copyright (c) 2018, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% utf8.ps - handle UTF-8 characters
+
+(psconfig.ps) run
+(lib/log.ps) require
+(lib/latinize.ps) require
+(lib/string.ps) require
+
+% see: file:///home/kdo/Desktop/eBooks/ProgLanguages/PostScript/PDFReference15_v5.pdf
+% pp. 868 ff.
+/utf8.map <<
+    (Ä)		(\304)	% Adieresis
+    (Ö)		(\326)	% Odieresis
+    (Ü)		(\334)	% Udieresis
+    (ä)		(\344)	% adieresis
+    (ö)		(\366)	% odieresis
+    (ü)		(\374)	% udieresis
+    (ß)		(\337)	% germandbls
+    (É)		(\311)	% Eacute
+    (é)		(\351)	% eacute
+    % guiellemot should be named guiellemet, but isn't in PostScript
+    (<<)	(\253)	% guiellemotleft 
+    (>>)	(\273)	% guiellemotright
+    % various symbols
+    (\\bu)	(\267)	% bullet
+>> def
+
+% replace the first occurrence of a UTF-8 character by its ISO8859 equivalent;
+% return false, if the searched string is not found
+% string search --> string true
+% string search --> string false
+/utf8.replace {		% string search
+    dup utf8.map exch known {		% string search bool
+	% well known character
+	dup utf8.map exch get 		% string search replace
+	string.replace.all		% string
+    } {					% string search
+	% unknown character
+	(****  UTF8 character not known: % string search ) logstack
+	quit
+    } ifelse
+} def
+
+% convert a UTF-8 string to ISO8859
+% utf8-string --> iso8859-string
+/utf8 {
+    utf8.map {
+	exch 4 string cvs exch
+	string.replace.all
+    } forall
+} def
+
+% utf8.ps ends here ------------------------------------------------

@@ -1,0 +1,41 @@
+%!PS
+%
+% Copyright (c) 2018, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test logging / printing functions on restricted objects
+
+(psconfig.ps) run
+
+(lib/log.ps) require
+
+(lib/psunit.ps) require
+
+/ex.only (will be execute only) def
+ex.only rcheck
+(string is readable                     ) assert.msg.TRUE
+
+/ex.only ex.only executeonly def
+ex.only rcheck
+(string is executable, but not readable ) assert.msg.FALSE
+
+/ex.only << /a (b) >> def
+ex.only rcheck
+(dictionary is readable                 ) assert.msg.TRUE
+
+/ex.only ex.only noaccess def
+ex.only rcheck
+(dictionary is not accessible           ) assert.msg.FALSE
+
+/ex.only [ (a) (b) ] def
+ex.only rcheck
+(array is readable                      ) assert.msg.TRUE
+
+/ex.only ex.only noaccess def
+ex.only rcheck
+(array is not accessible                ) assert.msg.FALSE
+
+showstack
+psunit.summary
+
+% test/log.access.err.ps ends here ---------------------------------
+

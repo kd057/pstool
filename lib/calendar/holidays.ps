@@ -1,0 +1,74 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% define christian holidays
+
+(psconfig.ps) run
+
+(lib/calendar/caldata.ps) require
+(lib/calendar/specialdays.ps) require
+
+% this module defines:
+%    MAP.HOLIDAY	symbol -> true/false, if a "real" holiday or not
+/MAP.HOLIDAY 1 dict def
+
+% to support dependency creation with build.dep
+(lib/calendar/holidays_*.ps) expect	% country specific calendars, dynamically loaded
+
+% setup holidays for a specific country;
+% internally creates MAP.HOLIDAY, aborts on failure
+% year country variant -> |
+/country.holidays {
+
+    % load the country specific file
+    exch 				% year variant country 
+    (lib/calendar/holidays_) exch	% year variant basename country
+    concat (.ps) concat require		% year variant
+
+    % get the variant specific and the common map
+    holidays exch get			% year v-dict
+    % initialize MAP.HOLIDAY with common holidays
+    holidays /common get		% year v-dict c-dict
+    /MAP.HOLIDAY exch def		% year v-dict
+    % add variant holidays
+    MAP.HOLIDAY exch dict.add		% year dict
+    pop pop				% |
+
+} def
+
+% return true, if this day is a non-working day / holiday
+% in the current year
+% daynum -> bool
+/is.a.holiday? {
+    { % dummy loop, to allow for early exiting
+	% is there a known symbol for this day?
+					    % daynum
+	dup DAY.TO.SYMBOL exch known not {	% daynum bool
+	    % no known symbol, can't be a holiday
+	    pop false			% bool
+	    exit				% bool
+	} if				% daynum
+
+	% symbol known in holiday dictionary?
+	DAY.TO.SYMBOL exch get		% symbol
+	dup				% symbol symbol
+	MAP.HOLIDAY exch known not {	% symbol bool
+	    % symbol not known in holiday map
+	    pop false			% bool
+	    exit			% bool
+	} if				% symbol
+
+	% symbol is known in holiday map
+	pop true			% true
+	exit
+    } loop				% bool
+} def
+
+% return true, if this day is a sunday
+% year daynum -> bool
+/sunday? {
+    weekDay 0 eq
+} def
+
+% holidays.ps ends here --------------------------------------------

@@ -1,0 +1,46 @@
+%!PS
+%
+% Copyright (c) 2018, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test logging / printing functions
+
+(psconfig.ps) run
+
+(lib/log.ps) require
+
+(lib/psunit.ps) require
+
+(next line: a dictionary) logln
+<<
+    /a (b)
+    /b /c
+    (d) /e
+    /g (h)
+    /i (j)
+>> log.dict
+nesting.level (nesting.level must be zero) 0 assert.msg.EQ
+
+(next line: a nested dictionary) logln
+<<
+    /a (b)
+    /b << /c (d) /e (f) >>
+    /g (h)
+    /i (j)
+>> log.dict
+nesting.level (nesting.level must be zero) 0 assert.msg.EQ
+
+/nesting.maxlevel 0 def
+(next line: nested dictionary - displayed) logln
+<<
+    /a (b)
+    /b << /c (d) >>
+>> log.dict
+nesting.level (nesting.level must be zero) 0 assert.msg.EQ
+
+(next line: not a dictionary, causes an error) logln
+{ /a (b) } log.dict
+
+showstack
+psunit.summary
+
+% test/log.dict.ps ends here ---------------------------------------

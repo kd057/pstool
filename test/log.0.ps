@@ -1,0 +1,42 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% basic test of logging / printing functions
+% THIS FILE SHALL NOT DEPEND ON OTHER FILES
+
+(psconfig.ps) run
+
+(lib/log.ps) require
+
+(next line: 1\\n) logln
+1 log log.ln
+
+(next line: 2\\n) logln
+2 logln
+
+(next line: 34.5\\n) logln
+3 log
+4.5 logln
+
+(next line: 6\\t7.8\\n) logln
+6 log
+log.tab
+7.8 logln
+
+(next line: not a dictionary, causes an error) logln
+{ /a (b) } log.dict
+
+(code block) logln
+{ 1 0 gt { (gt) log } { (le) log } ifelse log.ln } logln
+
+(hex value - non integer) logln
+1.2 logx ( 3.4) logx log.ln
+
+(hex value - integer) logln
+1 logx ( ) log 2 logx log.ln
+
+(valid file ) logln
+(/dev/null) (r) file logln
+
+% test/log.0.ps ends here ------------------------------------------

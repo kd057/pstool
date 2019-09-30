@@ -1,0 +1,222 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% log.ps - logging to stdout
+
+(psconfig.ps) run
+
+(lib/file.ps) require
+(lib/string.ps) require
+
+% print a newline
+/log.ln {
+    (\n) print
+} def
+
+% print a tab
+/log.tab {
+    (\t) print
+} def
+
+% handle unsupported PostScript object types
+% object -> |
+/unsupported.type {
+    (**** log.ps: type not supported: ) print	% object
+    dup type 24 string cvs print log.ln		% object
+    pop % printobject					% |
+} def
+
+% display any type of data
+% item log --> | % value displayed 
+/log {
+    % dictionary of type cases
+    <<
+	/stringtype		{ log.string }
+	/integertype		{ 24 string cvs print }
+	/realtype		{ 24 string cvs print }
+	/nametype		{ 24 string cvs print }
+	/dicttype		{ log.dict }
+	/arraytype		{ log.array }
+	/filetype		{ print.file.status }
+	/booleantype		{ 24 string cvs print }
+	/fonttype		{ unsupported.type }
+    >>
+    dup				% item dict dict
+
+    % which type?
+    2 index type known {	% item dict
+	1 index type		% item dict type
+	get exec		% |
+    } {				% item dict
+	(*** not recognized by log operator: ) print 	% item dict
+	pop type 24 string cvs print		% |
+	log.ln					% |
+    } ifelse
+
+} def
+
+% display any type of data, followed by a newline
+% item log --> | % value displayed 
+/logln {
+    log
+    log.ln
+} def
+
+% display a value as a hex string - falls back to log for non-integer values
+% numeric logx --> | % value displayed as 16#...
+/logx {
+    dup type /integertype ne {
+	log
+    } {
+	(16#) log
+	16 (0000) cvrs log
+    } ifelse
+} def
+
+% display string content, issue an error, if not readable
+% string -->|
+/log.string {
+    dup rcheck {
+	print
+    } {
+	(*** string not readable ***) print
+	pop
+    } ifelse
+} def
+
+% nesting level of dictionaries
+/nesting.maxlevel	0 def	% default=0 -- recursive
+/nesting.level		0 def
+/nesting.indent	   (+-- ) def
+
+% increment the indentation level; push indentation prefix on the stack
+% | -> first-prefix
+% old-prefix -> new-prefix
+/indent++ {
+    nesting.level 0 eq {
+	nesting.indent
+    } {
+	1 index nesting.indent concat
+    } ifelse
+    /nesting.level nesting.level 1 add def
+} def
+
+% decrement the indentation level; pop indentation prefix from the stack
+% prefix -> |
+/indent-- {
+    pop
+    /nesting.level nesting.level 1 sub 0 max def
+} def
+
+% display the content of a dictionary
+% dictionary log.dict --> |
+/log.dict {
+    { % dummy loop
+	dup type			% dict type
+	/dicttype ne {			% dict
+	    (**** log.dict: operand is not a dictionary: ) print	% dict
+	    type 24 string cvs print	% |
+	    log.ln			% |
+	    exit
+	} if
+
+	dup rcheck not {		% dict bool
+	    (*** dictionary not readable ***) print	% dict
+	    pop				% |
+	    exit			% |
+	} if
+
+	nesting.maxlevel 0 ne		% dict bool
+	nesting.maxlevel nesting.level lt	% dict bool bool
+	and {				% dict bool
+	    % exceeded maxlevel and not unlimited 
+	    (**** too deeply nested - level > maxlevel: ) log	% dict
+	    nesting.level log		% dict
+	    ( > ) log			% dict
+	    nesting.maxlevel log	% dict
+	    ( ****) logln		% dict
+	    pop				% |
+	    exit
+	} if
+
+	% display the dictionary
+	(<<) logln % begin marker	% dict
+	indent++			% dict prefix
+	exch {				% prefix key value
+	    2 index log			% prefix key value
+	    exch log			% prefix value
+	    ( --> ) log logln		% prefix
+	} forall			% prefix
+	indent--			% |
+	nesting.level 0 gt { dup log } if
+	(>>)   logln % end marker	% |
+
+	exit
+    } loop
+} def
+
+% display the keys of a dictionary
+% dictionary log.keys --> |
+/log.keys {
+    dup type
+    /dicttype ne {
+	(**** log.keys: operand is not a dictionary: ) logstack
+    } {
+	/nesting.level nesting.level 1 add def
+	(**** begin dictionary (keys) **** level = ) log nesting.level logln	% dict
+	(<<) logln
+	{
+	    exch
+	    nesting.level log
+	    (>    key: ) log
+	    logln
+	    pop
+	} forall
+	(>>) logln
+	(**** end dictionary **** level = ) log nesting.level logln	% dict
+	/nesting.level nesting.level 1 sub def
+    } ifelse
+} def
+
+% display the content of an array
+% array log.array --> |
+/log.array {
+    { % dummy loop
+	dup type			% array type
+	/arraytype ne {			% array
+	    (**** log.array: operand is not an array: ) print	% array
+	    type 24 string cvs print	% |
+	    (/n) print			% |
+	    exit
+	} if
+
+	([) logln % begin marker	% array
+	indent++			% array prefix
+	exch {				% prefix element
+	    1 index log			% prefix element
+	    logln			% prefix
+	} forall			% prefix
+	indent--			% |
+	nesting.level 0 gt { dup log } if
+	(])   logln % end marker	% |
+
+	exit
+    } loop
+} def
+
+% display stack content enclosed in visual markers
+% | --> |
+/showstack {
+    (+++ STACK +++) logln
+    pstack
+    (--- STACK ---) logln
+} def
+
+% display a message and the stack content
+% msg --> |
+/logstack {
+    logln showstack
+} def
+
+% log.ps ends here -------------------------------------------------

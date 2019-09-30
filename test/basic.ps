@@ -1,0 +1,34 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% basic.ps - basic components of a page
+
+(psconfig.ps) run
+
+(lib/math.ps) require
+(lib/basic.ps) require
+
+1 setlinewidth
+0.2 inch 0.2 inch 1 inch 2 inch rectstroke
+
+2 inch 1 inch
+10 setlinewidth
+1 inch 2 inch rectstroke
+
+15 setlinewidth
+2 inch 1 inch  4 inch 1 inch rectstroke
+stroke
+
+2 inch 1 inch  4 inch 3 inch 10 rect.at.inner
+stroke
+
+2 inch 1 inch  4 inch 5 inch 0 rect.at.inner
+0.8 setgray fill
+
+2 inch 1 inch  4 inch 5 inch rectstroke
+0.8 setgray fill
+
+showpage
+
+% test/basic.ps ends here ------------------------------------------

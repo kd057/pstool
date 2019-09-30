@@ -1,0 +1,40 @@
+%!PS
+%
+% Copyright (c) 2018, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test logging / printing functions for collections
+
+(psconfig.ps) run
+
+(lib/log.ps) require
+
+(lib/psunit.ps) require
+
+(next line: a nested dictionary) logln
+<<
+    /a (b)
+    /b << /c (d) /e (f) >>
+    /g (h)
+    /i (j)
+>> logln
+nesting.level (nesting.level must be zero) 0 assert.msg.EQ
+
+(nested arrays) logln
+[ /a [ 2 (c) ] 4 ] log.array log.ln
+nesting.level (nesting.level must be zero) 0 assert.msg.EQ
+
+(next line: a dictionary with a nested array) logln
+<<
+    /a (b)
+    /b [ /c [ (d) /e ] (f) ]
+    /g (h)
+    /i (j)
+>> logln
+nesting.level (nesting.level must be zero) 0 assert.msg.EQ
+
+
+
+showstack
+psunit.summary
+
+% test/log.collection.ps ends here ---------------------------------

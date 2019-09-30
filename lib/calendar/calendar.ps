@@ -1,0 +1,194 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test runner
+
+%%BeginSetup
+%%BeginFeature
+<< /Duplex false >> setpagedevice
+%%EndFeature
+%%EndSetup
+
+% load the tools library
+(psconfig.ps)   run
+
+% get ISO 8859 character glyphs
+(lib/latinize.ps)   require
+
+% get calendar data
+(lib/calendar/caldata.ps) require
+(lib/calendar/specialdays.ps) require
+
+% layout definitions
+(lib/calendar/layout.ps) require
+
+% display month days and photo
+(lib/calendar/showmonth.ps) require
+(lib/photo/showphoto.ps) require
+
+% string handling
+(lib/string.ps) require
+
+% additional operators
+(lib/show.ps) require
+
+userdict /photo.dict known not
+userdict /all-photos known not
+or {
+    (*************************************************) logln
+    (* /photo.dict must be defined on the title page *) logln
+    (*************************************************) logln
+    () logln
+    (quitting) logln
+    quit
+} if
+
+/URLS 1 dict def
+
+% check the image describing dictionary
+% aborts, if mandatory entries are missing:
+%   /description
+%   /fname
+%   /location
+%   /title
+% optional entries are:
+%   /author
+%   /localurl
+%   /year
+% dict --> true
+/check.img.dict {
+    /fname		img.dict.known		% bool
+    not {					% |
+	quit
+    } if
+
+    /description	img.dict.known		% bool
+    not {
+	quit
+    } if
+
+    /location		img.dict.known		% bool
+    not {					% |
+	quit
+    } if
+} def
+
+% checks, if the name is known in the photo specific directory (currentdict)
+% /name --> bool
+/img.dict.known {
+    dup currentdict exch known not {		% name bool
+	(**** mandatory entry missing: ) log	% name
+	logln
+	currentdict log.keys
+	false					% false
+    } {						% name
+	pop true				% true
+    } ifelse
+} def
+
+% display a copyright notice at the current position
+% if year or other are not known, get it from the global photo.dict
+% image-dict --> |
+/copyright.notice {
+    % define a local copy of the image dictionary
+    /this.img.dict exch def
+
+    this.img.dict /author known {
+	this.img.dict /author get	% author
+    } {
+	photo.dict /title get /author get % author
+    } ifelse
+
+    this.img.dict /year known {
+	this.img.dict /year get		% author year
+    } {
+	photo.dict /title get /year get	% author year
+    } ifelse
+
+    gsave				% author year
+	font.day.name setfont		% author year
+	(Photo: \251 ) exch concat	% author copyright
+	( ) concat exch concat		% copyright
+	photoXpt 0 rmoveto		% copyright
+	rshow				% 
+    grestore
+} def
+
+% display the photo title at the current position
+% photo-dictionary --> |
+/photo.title.show {
+    gsave
+	font.sunday.name setfont
+	dup /title known {
+	    % display the title in a bold font, followed by description
+	    dup /title get show
+	    font.day.name setfont
+	    ( - ) show
+	    dup /description get show
+	} {
+	    % the description replaces the missing title
+	    dup /description get show
+	    font.day.name setfont
+	} ifelse
+
+	( \() show
+	dup /location get show
+	(\)) show
+    grestore
+    pop
+} def
+
+% display a single sheet of the calendar
+% photo-name year month --> |
+/oneSheet {
+    % get the file name from the dictionary
+    /calMonth exch def
+    /calYear exch def
+    photo.dict exch get
+    begin 	% put image dictionary on top
+	check.img.dict
+
+	% display the photo
+	% ... image
+	layout.photoSize		% filename w h
+	layout.photoOrigin		% filename w h llx lly
+
+	currentdict position.photo	% photo-parameters-dict
+	photo.display			% |
+
+	% display month name
+	moveToMonthNameRight
+	calMonth showMonthNameRight
+
+	% displays month days
+	layout.calendarOrigin moveto
+	calYear calMonth showMonth
+
+	% ... description
+	moveToPhotoTitle
+	currentdict photo.title.show
+
+	% ... copyright
+	currentdict copyright.notice
+
+	gsave
+	    photo.dict /title get /url known
+	    currentdict /localurl known
+	    and {
+		layout.photoOrigin exch photoXpt add exch
+		moveto
+		90 rotate
+		0 pt.day.name neg rmoveto
+		font.day.name setfont
+		photo.dict /title get /url get
+		    (/) concat
+			localurl concat
+		dup show
+		URLS exch title exch put
+	    } if
+	grestore
+    end % pop photo dictionary
+} def
+
+% calendar.ps ends here --------------------------------------------

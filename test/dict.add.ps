@@ -1,0 +1,35 @@
+%!PS
+%
+% Copyright (c) 2019, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test dictionary select operator
+
+(psconfig.ps) run
+
+(lib/psunit.ps) require
+(lib/collection.ps) require
+(lib/math.ps) require
+(lib/log.ps) require
+
+/dict1 <<
+>> def
+
+dict1 <<
+    0	(zero)
+>> dict.add pop 
+
+dict1 <<
+    1	(uno)
+    2	(deux)
+>> dict.add pop
+
+dict1 <<
+    2	(deux)
+    1	(uno)
+    0	(zero)
+>> dict.eq assert.TRUE
+
+showstack
+psunit.summary
+
+% test/dict.revert.ps ends here ------------------------------------

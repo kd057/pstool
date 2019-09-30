@@ -1,0 +1,77 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test variants of the show operator
+
+(psconfig.ps) run
+
+(lib/log.ps) require
+(lib/show.ps) require
+(lib/string.ps) require
+(lib/calendar/layout.ps) require
+
+% display a string at the given position; draw the bounding box
+% string llx lly --> |
+/run.test {
+    2 copy moveto	% string llx lly
+    2 index stringsize	% string llx lly width height
+    rectstroke		% string
+    show
+} def
+
+% display a string at the given position using cc; draw the bounding box
+% string llx lly --> |
+/run.test.cc {
+    2 copy			% string llx lly llx lly
+    gsave			% string llx lly llx lly
+	translate		% string llx lly
+	2 index stringsize	% string llx lly width height
+	2 copy			% string llx llx width height width height
+	2 div neg exch		% string llx llx width height (-height/2) width
+	2 div neg exch		% string llx llx width height (-width/2) (-height/2)
+	4 2 roll		% string llx llx (-width/2) (-height/2) width height
+	rectstroke		% string llx lly
+    grestore
+    moveto
+    cc.show
+} def
+
+% display a string at the given position using cc; draw the bounding box
+% string llx lly angle --> |
+/turn.test.cc {
+    4 1 roll			% angle string llx lly
+    2 copy			% angle string llx lly llx lly
+    gsave			% angle string llx lly llx lly
+	translate		% angle string llx lly
+	0 0 moveto		% angle string llx lly
+	2 index stringsize	% angle string llx lly width height
+	2 copy			% angle string llx llx width height width height
+	2 div neg exch		% angle string llx llx width height (-height/2) width
+	2 div neg exch		% angle string llx llx width height (-width/2) (-height/2)
+	4 2 roll		% angle string llx llx (-width/2) (-height/2) width height
+	7 index rotate		% angle string llx llx (-width/2) (-height/2) width height
+	rectstroke		% angle string llx lly
+	pop pop cc.show		% angle
+	pop			% |
+    grestore			% |
+} def
+
+font.title setfont
+
+(x)	1 inch 1 inch	run.test
+(xx)	1 inch 2 inch	run.test
+(xxxx)	1 inch 3 inch	run.test
+(XXXXX)	1 inch 4 inch	run.test
+
+(x)	4 inch 1 inch	run.test.cc
+(xx)	4 inch 2 inch	run.test.cc
+(xxxx)	4 inch 3 inch	run.test.cc
+(XXXXX)	4 inch 4 inch	run.test.cc
+
+   (x__ __x)	 4 inch 6 inch	 30 turn.test.cc
+  (xx__ __xx)	 4 inch 6 inch	135 turn.test.cc
+(xxxx__ __xxxx)  4 inch 6 inch	240 turn.test.cc
+(XXXX__ __XXXXX) 4 inch 6 inch	345 turn.test.cc
+
+% test/show.ps ends here -------------------------------------------

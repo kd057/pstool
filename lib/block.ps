@@ -1,0 +1,51 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% block.ps - block structuring for postscript programs
+
+(psconfig.ps) run
+
+% open a block - pushes a new local dictionary on the dictionary stack
+% | --> | -- dictionary on dict stack
+/block {
+    % create local dictionary
+    0 dict
+
+    % really useful?
+    % % add reference to current dict
+    % dup /...outer... currentdict put
+
+    % switch to local dict
+    begin
+} def
+
+% close / leave a block - pops the local dictionary off the dictionary stack
+% | --> | -- popped dictionary off dict stack
+/leave {
+    end
+} def
+
+% if key is undefined, provide a default value in the current dictionary (local block)
+% key value --> |
+/defaultTo {
+    1 index where {
+	3 { pop }repeat % already defined - pop: key value dict
+    } {
+	currentdict 3 1 roll put
+    } ifelse
+} def
+
+% assign a new value to a variable, which might not be in currentdict
+% /name value --> |
+/assign {
+    1 index where {
+	3 1 roll put
+    } {
+	(**** variable not found: ) log pop log
+	( **** ABORTING ****) logln
+	quit
+    } ifelse
+} def
+
+% block.ps ends here -----------------------------------------------

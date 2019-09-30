@@ -1,0 +1,166 @@
+= pstools - README.adoc
+
+Copyright (c) 2016-2019, Klaus-Dieter Ost, SMO GmbH Software Manufaktur
+
+== Creating Wall Calendars
+
+This PostScript library lets you create a wall calendar from a list
+of images.
+
+* Starting in a defined year and month, a monthly page is created for
+  every image in this list.
+
+* German holidays are supported for each of the 16 federal states,
+  but the mechanism should be flexible enough to support other
+  schemes as well.
+
+* A sample calendar is part of this project; out of the box, this
+  calendar will show the holidays of Hesse, Germany.
+
+The sample code and this document should give you a starter to
+create your own calendar with your own set of images.
+
+If in doubt, look at the source code -- it should be documented sufficiently.
+
+== Specification
+
+Calendar pages are designed to be in landscape A3 format, i.e. the
+target dimensions are:
+
+* 1191pt x 842pt (typographical points)
+
+* 420mm x 297mm
+
+* 16.54" x 11.69"
+
+Photos are shown with an aspect ratio of 16:9.
+
+== Creating Your Own Calendar
+
+=== Prerequisites
+
+==== Makefile
+
+Calling __make what__ displays all defined targets and a short comment,
+__make all__ creates all calendars -- PDF files as defined in the
+macro `PDFs`.
+
+By default, GhostScript (gs) is called to create these files, but
+any other appropriate application will do,
+if you adjust the parameters accordingly.
+
+==== The __main program__
+
+Have a look at `frankfurt-2020.ps` as a template of a calendar.
+If you just copy this file,
+you only have to modify the two code blocks marked with `=== CONFIG ===`.
+The first block specifies the list of images for this calendar:
+
+----
+% ============= CONFIG ============= %
+%                                    %
+%   this year's photos
+    (calendar/photos-2020-frankfurt.ps) require
+%                                    %
+% ================================== %
+----
+
+`require` is a function defined in the *`pstools`*, and acts similar
+to the same named operator in JavaScript or Ruby:
+if the named file has not yet been processed, it is *run* (__included__);
+otherwise, the statement is ignored.
+
+The second block defines a `COUNTRY` and `COUNTRY.VARIANT` to be
+used in the holiday calculation and the `month.first` for this
+project:
+
+----
+% ============= CONFIG ============= %
+%                                    %
+    /COUNTRY            (DE) def
+    /COUNTRY.VARIANT    (HE) def
+    2020 01 month.first
+    CURYEAR COUNTRY COUNTRY.VARIANT country.holidays
+    title.page.grid showpage
+%                                    %
+% ================================== %
+----
+
+Currently, only german holidays are supported (/COUNTRY (DE) def), as well as the 16 federal states:
+
+* BB -- Brandenburg
+* BE -- Berlin
+* BW -- Baden-Württemberg
+* BY -- Bayern
+* HE -- Hessen
+* HH -- Hamburg
+* MV -- Mecklenburg-Vorpommern
+* NI -- Niedersachsen
+* NW -- Nordrhein-Westfalen
+* RP -- Rheinland-Pfalz
+* SH -- Schleswig-Holstein
+* SL -- Saarland
+* SN -- Sachsen
+* ST -- Sachsen-Anhalt
+* TH -- Thüringen
+
+Other countries and variants could be added similar to `lib/calendar/holidays_DE.ps`.
+
+CAUTION: The definition of _Repentance Day_ (_Buß- und Bettag_) is currently incomplete / missing. This will be fixed asap.
+
+The last line issues a title page --
+more on this below (!!! still open !!!).
+
+==== List Of Images
+
+See the file `calendar/photos-2020-frankfurt.ps` for an example
+list of images.
+Copy this file and modify the copy to suite your needs.
+I assume this file is sufficiently documented.
+
+There are three main parts:
+
+* the `/title` dictionary configures the title page
+
+* set of dictionaries named `X0`, `X1`, ... defines single pages;
+  these names are arbitrary, they are only used in the last part:
+
+* the output order of these images is defined in the array `all-photos`.
+
+=== Building Everything
+
+If everything has been set up, calling
+
+----
+make my-calendar.pdf
+----
+
+will create a PDF of your calendar.
+
+== Some remarks on the `test` directory
+
+`make tests` and `make tests.pdf` will run the tests as found in the test directory.
+The former will evaluate the PostScript in your local raster image
+processor (`RIP`) -- most probably GhostScript --
+the latter will do the same,
+but also create a PDF for each of the PostScript files.
+
+Most -- but not all -- tests are unit tests.
+I did not find an easy way to run all the tests in a unit-test
+framework, so some of these will need a keen eye for physical
+inspection.
+
+If `make` does not abort, it's a good indication that everything
+is OK.
+
+== Still Missing in this Overview
+
+* variants of title pages
+
+* where to configure ...
+
+** sizes
+** positions
+** fonts
+
+* everything else ..

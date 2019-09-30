@@ -1,0 +1,353 @@
+%!PS
+
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+(psconfig.ps) run
+
+(lib/basic.ps) require
+(lib/block.ps) require
+(lib/show.ps) require
+(lib/jpeg.analyze.ps) require
+(lib/string.ps) require
+
+% extract image parameters from a jpeg file into the current dictionary
+% adds to currentdict:
+% - /bpp - bits per pixel
+% - /w.pixel - width in pixels
+% - /h.pixel - heigth in pixels
+% | --> | % updated current-dict
+/get.photo.params {
+    % store file object in dictionary
+    fname (r) file 		% width height bpp file
+    /fileobj	exch def	% width height bpp
+
+    % dimensions of source image
+    fname jpeg.dimensions	% width height bpp
+    /bpp	exch def	% width height
+    /h.pixel	exch def	% width
+    /w.pixel	exch def	% |
+} def
+
+% define values for x- and y-dimensions and lower left coordinate
+% w h llx lly dictionary --> dictionary
+/position.photo {
+    begin			% width height llx lly
+	/lly    exch def	% width height llx
+	/llx    exch def	% width height
+	/h      exch def	% width
+	/w      exch def	% 
+
+	currentdict
+    end
+} def
+
+% compute photo origin and size to cover the whole display area / clip region
+% | --> | --  updated-image-dict
+/photo.clip {
+    % scale to "original" size
+    clipAtY 0 ne { w photo.fit.horizontal } if
+    clipAtX 0 ne { h photo.fit.vertical } if
+
+    % coordinates of lower left edge of photo
+    % convert clipAt* from pixel to pt in the target coordinate system
+    /pllx llx clipAtX w.pixel div w.scale mul sub def
+    /plly lly clipAtY h.pixel div h.scale mul sub def
+} def
+
+% compute parameters to display the photo with the given target width
+% target-width --> | --  updated-image-dict
+/photo.fit.horizontal {
+    % scale to target width
+    /w.scale exch def
+    % apply same scaling factor to height
+    /h.scale w.scale h.pixel mul w.pixel div def
+} def
+
+% compute parameters to display the photo with the given target height
+% target-height --> | --  updated-image-dict
+/photo.fit.vertical {
+    % scale to target height
+    /h.scale exch def
+    % apply same scaling factor to width
+    /w.scale h.scale w.pixel mul h.pixel div def
+} def
+
+% compute parameters for placing the photo: scale/clip/translate
+% | --> | --  updated-image-dict
+/photo.fit {
+    % define defaults
+    /pllx llx def % lower left corner to display photo
+    /plly lly def % lower left corner to display photo
+    isClipped {
+	photo.clip
+    } {
+	% best fit / do not clip
+	% provide defaults for width and height
+	/w.scale w def
+	/h.scale h def
+
+	% correct scaling, if the image does not cover the destination area
+	w.pixel h mul				% prod1
+	h.pixel w mul				% prod1 prod2
+	lt {
+	    % reset target width to match the original aspect ratio
+	    h h.pixel div w.pixel mul		% final-x
+	    /w.scale exch def			% |
+	    w w.scale sub 2 div			% lower left x within display area
+	    llx add				% llx
+	    /pllx exch def			% |
+	} {
+	    w.pixel h mul			% prod1
+	    h.pixel w mul			% prod1 prod2
+	    gt { 
+		% reset target height to match the original aspect ratio
+		w w.pixel div h.pixel mul	% final-y
+		/h.scale exch def		% |
+		h h.scale sub 2 div		% lower left y within display area
+		lly add			% new-lly
+		/plly exch def			% |
+	    } {
+		(*** image fits into destination area ***) logln
+	    } ifelse
+	} ifelse
+    } ifelse
+
+} def
+
+% clip the drawing area and optionally draw a frame around
+% expects boolean value isFramed in current dictionary and values:
+% llx, lly, w, h
+% | --> | % positioned at llx, lly
+/drawing.area {
+    llx lly w h rectclip
+    isFramed {
+	% display a visible background
+	0 setlinewidth
+	0.25 setgray
+	llx lly w h rectstroke % fill
+    } if
+} def
+
+% (optionally) show "clip marks" along the lower left and upper right edge
+% origin is at the lower left corner of the photo
+% | --> |
+/show.clip.marks {
+    showClipMarks {
+% (
+%     How to draw clip marks
+%     ----------------------
+% 
+%     If the aspect ratio  of the photo is equal to the aspect ratio
+%     of the drawing area, the photo can be scaled to perfeclty
+%     fit. In all other cases, the edge that fits must be clipped
+%     so much that the other edge will extend to its full length.
+%
+%	    +-----------------------+--------------+
+%	    |    aspect ratio of    |     fits     |
+%	    | photo vs. target area |              |
+%	    +-----------------------+--------------+
+%	    |    less               |  vertically  |
+%	    +-----------------------+--------------+
+%	    |    equal              | horizontally |
+%	    |                       |  vertically  |
+%	    +-----------------------+--------------+
+%	    |    greater            | horizontally |
+%	    +-----------------------+--------------+
+%
+%     Clip marks will be displayed at the respective edge. The
+%     displayed scale is related to the number of pixels, so that
+%     scaling can be applied independent of the effective target
+%     size.
+% ) logln
+	w w.scale eq {
+	    % still missing: display clip marks on top and bottom
+	} {
+	    h h.scale eq {
+		(**** display clip marks at left and right **** ) logln
+		gsave
+		    0.1 setlinewidth
+
+		    % font for clip mark labels
+		    /Helvetica findfont 10 scalefont setfont
+
+		    % clip marks at left
+		    % ------------------
+
+		    % display pixel counts every /pcnt pixels (default: 50)
+		    % pcnt must be greater than 10 points (line height)
+		    /pcnt 10 h.pixel mul h cvi idiv 50 idiv 1 add 50 mul def
+
+		    % fixed scale:
+		    % - short line every 10 pixels
+		    % - long line every 50 pixels
+		    % - display pixel count every /pcnt (50) pixels
+		    0		% start at bottom
+		    10		% pixel
+		    h.pixel {	% end at upper edge
+			dup 50 mod 0 eq		% pixel bool
+			1 index			% pixel bool pixel
+			h mul h.pixel div	% pixel bool pt
+			0 exch moveto		% pixel bool
+			{ %% every 50 pixels
+			    0.5 cm neg 0 rlineto % pixel
+			    dup pcnt mod 0 eq {
+				10 string cvs ( ) concat rshow % display pixels
+			    } { pop } ifelse
+			} {
+			    0.2 cm neg 0 rlineto % pixel
+			    pop
+			} ifelse
+		    } for stroke
+
+		    % clip marks at upper right
+		    % -------------------------
+
+		    % upper edge, if clipped at this Y value
+		    w.pixel w div h mul cvi % top pixel if clipped at 0
+		    dup				% start-pixel start-pixel
+		    10				% start-pixel start-pixel step
+		    h.pixel {			% start-pixel start-pixel step stop-pixel
+			% stack: start-pixel current-pixel
+			2 copy			% start pixel start pixel
+			sub			% start pixel diff
+			50 mod 0 eq		% start pixel bool
+			1 index			% start pixel bool pixel
+			h mul h.pixel div	% start pixel bool pt
+			w.scale exch moveto	% start pixel bool
+			{ %% every 50 pixels
+			    0.5 cm 0 rlineto	% start pixel
+			    1 index sub		% start relative-pixel
+			    dup pcnt mod 0 eq {
+				10 string cvs ( ) concat show % display pixels
+			    } { pop } ifelse
+			} {
+			    0.2 cm 0 rlineto % start pixel
+			    pop
+			} ifelse
+		    } for stroke
+		    pop % top pixel
+
+		    % clip marks at lower right
+		    % -------------------------
+
+		    % upper edge, if clipped at this Y value
+		    w.pixel w div h mul cvi % top pixel if clipped at 0
+		    dup				% start-pixel start-pixel
+		    10 neg			% start-pixel start-pixel step
+		    0 {				% start-pixel start-pixel step stop-pixel
+			% stack: start-pixel current-pixel
+			2 copy			% start pixel start pixel
+			sub			% start pixel diff
+			50 mod 0 eq		% start pixel bool
+			1 index			% start pixel bool pixel
+			h mul h.pixel div	% start pixel bool pt
+			w.scale exch moveto	% start pixel bool
+			{ %% every 50 pixels
+			    0.5 cm 0 rlineto	% start pixel
+			    1 index sub		% start relative-pixel
+			    dup pcnt mod 0 eq {
+				10 string cvs ( ) concat show % display negative pixels
+			    } { pop } ifelse
+			} {
+			    0.2 cm 0 rlineto % start pixel
+			    pop
+			} ifelse
+		    } for stroke
+		    pop % top pixel
+		grestore
+	    } {
+		(     WHERE TO DRAW CLIP MARKS?) logln
+	    } ifelse
+	} ifelse
+    } if
+} def
+
+% return true, if the key is known in currentdict, else false
+% key --> bool
+/check.current {
+    dup
+    currentdict exch known {
+	pop true
+    } {
+	(**** not known in currentdict: ) log logln
+	false
+    } ifelse
+} def
+
+% check current dictionary to photo.display, so that photo.display() has all required values,
+% | --> | % aborts, if invalid or inconsistent,
+/photo.display.check {
+    true /fname    check.current
+    and  /llx      check.current
+    and  /lly      check.current
+    and  /h        check.current
+    and  /w        check.current
+    and not {
+	(**** one or more required values not known in current dictionary - aborting ****) logstack
+	currentdict logln
+	quit
+    } if
+} def
+
+% provide default values for display parameters:
+% - /isClipped
+% - /clipAtX, /clipAtY
+% - /isFramed
+% - /showClipMarks
+% | --> | % aborts, if invalid or inconsistent,
+/photo.display.defaults {
+    /clipAtX		0	defaultTo
+    /clipAtY		0	defaultTo
+
+    % derived values
+    clipAtX 0 ne
+    clipAtY 0 ne or
+    /isClipped		exch	def
+
+    /isFramed		isClipped	defaultTo
+    /showClipMarks	isClipped not	defaultTo
+} def
+
+% display a photo at an arbitrary position (lower left coordinate and width/height)
+% photos might be ...
+% - clipped, to fill the display area (/isClipped == true, /clipAtY or clipAtX specifies a pixel value),
+% - displayed with clip marks, as an aid to determine clipAtY and clipAtX values
+% - shown with a frame, to make its extension visible (/isFramed == true)
+% the dictionary must have:
+% - fname - pathname of the jpeg file
+% - placement of photo on page (values in PostScript units):
+%    - llx, lly - coordinates of lower left corner
+%    - w, h - size of enclosing rectangle
+% photo-params --> |
+/photo.display {
+    begin
+	photo.display.check
+	photo.display.defaults
+	get.photo.params
+
+	% display photo
+	gsave
+	    % setup a clipping path for the photo and optionally draw a frame around it
+	    drawing.area
+
+	    % determines width, height and lower left corner to position the photo
+	    photo.fit
+
+	    % set photo origin
+	    pllx plly translate
+	    show.clip.marks
+	    % show photo
+	    w.pixel h.pixel bpp
+	    [ w.pixel 0 0 h.pixel neg 0 h.pixel ] % width height bpp matrix
+	    % ensure beginning of file
+	    fileobj 0 setfileposition		% width height bpp matrix
+	    fileobj /DCTDecode filter		% width height bpp matrix file
+	    false 3				% width height bpp matrix file single-data-source num-colors
+
+	    w.scale h.scale scale
+	    colorimage
+	grestore
+    end
+} def
+
+% showphoto.ps ends here -------------------------------------------

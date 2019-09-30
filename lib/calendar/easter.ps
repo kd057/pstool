@@ -1,0 +1,66 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% calculate easter
+
+(psconfig.ps) run
+
+% found in Wikipedia (german) - Lichtenberg, 1997:
+%    
+%    1. die Säkularzahl                                 K(X) = X div 100
+%    2. die säkulare Mondschaltung                      M(K) = 15 + (3K + 3) div 4 − (8K + 13) div 25
+%    3. die säkulare Sonnenschaltung                    S(K) = 2 − (3K + 3) div 4
+%    4. den Mondparameter                               A(X) = X mod 19
+%    5. den Keim für den ersten Vollmond im Frühling    D(A,M) = (19A + M) mod 30
+%    6. die kalendarische Korrekturgröße                R(D,A) = (D + A div 11) div 29
+%    7. die Ostergrenze                                 OG(D,R) = 21 + D − R
+%    8. den ersten Sonntag im März                      SZ(X,S) = 7 − (X + X div 4 + S) mod 7
+%    9. die Entfernung des Ostersonntags von der
+%       Ostergrenze (Osterentfernung in Tagen)          OE(OG,SZ) = 7 − (OG − SZ) mod 7
+%   10. das Datum des Ostersonntags als Märzdatum
+%       (32. März = 1. April usw.)                      OS = OG + OE
+%    
+%    
+
+% date of easter
+% year --> daynumber
+/easterDay {
+    /X exch def
+    % step 1
+    %		(**** step 1 ****) showstack pop
+    X 100 idiv /K exch def
+    % step 2
+    %		(**** step 2 ****) showstack pop
+    15 K 1 add 3 mul 4 idiv add K 8 mul 13 add 25 idiv sub /M exch def
+    % step 3
+    %		(**** step 3 ****) showstack pop
+    2 K 1 add 3 mul 4 idiv sub /S exch def
+    % step 4
+    %		(**** step 4 ****) showstack pop
+    X 19 mod /A exch def
+    % step 5
+    %		(**** step 5 ****) showstack pop
+    A 19 mul M add 30 mod /D exch def
+    % step 6
+    %		(**** step 6 ****) showstack pop
+    D A 11 idiv add 29 idiv /R exch def
+    % step 7
+    %		(**** step 7 ****) showstack pop
+    21 D add R sub /OG exch def
+    % step 8
+    %		(**** step 8 ****) showstack pop
+    7 X X 4 idiv add S add 7 mod sub /SZ exch def
+    % step 9
+    %		(**** step 9 ****) showstack pop
+    7 OG SZ sub 7 mod sub /OE exch def
+    % step 10
+    %		(**** step 10 ****) showstack pop
+    OG OE add /OS exch def
+    %		(**** done ****) showstack pop
+    % return the absolute day number / OS = relative to March
+    X 3 1 dayOfYear 1 sub	% get the zeroth of March
+    OS add
+} def
+
+% easter.ps ends here ----------------------------------------------

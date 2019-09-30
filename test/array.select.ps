@@ -1,0 +1,29 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test array select operator
+
+(psconfig.ps) run
+
+(lib/psunit.ps) require
+(lib/collection.ps) require
+(lib/math.ps) require
+(lib/log.ps) require
+
+/numbers [ 1 2 3 4 5 6 7 ] def
+
+numbers { odd } select logln
+numbers { 1 add even } select logln
+numbers { 0 gt } select logln
+numbers { 0 exch gt } select logln
+
+(***** select2 - "odd" *****) logln
+numbers { odd } select2 logln logln
+(***** select2 - "not even" *****) logln
+numbers { 1 add even } select2 logln logln
+
+showstack
+psunit.summary
+
+% test/array.select.ps ends here ----------------------------------------

@@ -1,0 +1,42 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test array
+
+(psconfig.ps) run
+
+(lib/psunit.ps) require
+(lib/array.ps) require
+(lib/log.ps) require
+
+/org [ /a [ 2 (c) ] 4 ] def
+/rev org revert def
+/revrev rev revert def
+
+% org logln
+% rev logln
+
+0 1 org length 1 sub {
+    dup
+    org exch get
+    exch
+    revrev exch get
+    assert.EQ
+} for
+
+/string.0102.0304.ff01.00ff.ff00 (\001\002\003\004\377\001\0\377\377\0) def
+
+
+string.0102.0304.ff01.00ff.ff00 0		% string index
+scan.word   256   1 mul   2 add assert.EQ
+scan.word   256   3 mul   4 add assert.EQ
+scan.word   256 255 mul   1 add assert.EQ
+scan.word   256   0 mul 255 add assert.EQ
+scan.word   256 255 mul   0 add assert.EQ
+pop pop
+
+showstack
+psunit.summary
+
+% test/psunit.ps ends here -----------------------------------------

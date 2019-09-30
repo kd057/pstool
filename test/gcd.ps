@@ -1,0 +1,20 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% gcd.ps - function from math.ps
+
+(psconfig.ps) run
+
+(lib/math.ps) require
+(lib/psunit.ps) require
+
+16 4 gcd 4 assert.EQ
+15 4 gcd 1 assert.EQ
+128 20 gcd 4 assert.EQ
+130 20 gcd 10 assert.EQ
+3648 2048 gcd 64 assert.EQ
+2048 3648 gcd 64 assert.EQ
+3648 2048 gcd 2048 3648 gcd assert.EQ
+
+% test/basic.ps ends here ------------------------------------------

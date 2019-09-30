@@ -1,0 +1,28 @@
+%!PS
+%
+% Copyright (c) 2018, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test array dup operator
+
+(psconfig.ps) run
+
+(lib/psunit.ps) require
+(lib/collection.ps) require
+(lib/math.ps) require
+(lib/log.ps) require
+
+/numbers [ 1 2 3 4 5 6 7 ] def
+
+[ 1 ] [ 2 3 ] collection.eq assert.FALSE
+[ 1 8 9 ] [ 2 8 9 ] collection.eq assert.FALSE
+[ 3 4 ] [ 3 4 ] collection.eq assert.TRUE
+
+numbers numbers collection.eq assert.TRUE
+numbers dup collection.dup assert.EQ
+numbers dup collection.dup
+dup 0 99 put collection.eq assert.TRUE
+
+showstack
+psunit.summary
+
+% test/collection.dup.ps ends here ---------------------------------

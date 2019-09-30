@@ -1,0 +1,207 @@
+%!PS
+%
+% Copyright (c) 2019, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% a dictionary of all photos for 2020's Frankfurt calendar
+
+% global settings, mostly for the title page
+
+/photo.dict <<
+    /title <<
+        /variant        2 % see: /get.grid.variant in lib/calendar/title.ps
+	/author		(Klaus-Dieter Ost)
+	/title		(Frankfurt)
+	/description	[ (Frankfurter) utf8 (Spaziergänge) utf8 ]
+	/year		(2020)
+	/copyrightYear	(2019)
+	/url		()
+	% /localurl	(Titel)
+    >>
+
+% for each photo, there is a dictionary of:
+%	- author		author (Klaus-Dieter Ost)
+%	- file name		fname / mandatory
+%	- short title		title / mandatory
+%	- long title
+%	- description		description
+%	- original image file name
+%	- editing remarks
+%	- copyright year	year / mandatory
+%	- location		location / mandarory
+%	- local URL 		localurl / optional
+%	- clipAtX		lower left X pixel
+%	- clipAtY		lower left Y pixel
+
+    % sample dictionary entry:
+    %	/fname		(pics/2018/cimg0182.jpg)
+    %	/description	(St. Michaelskirche) utf8
+    %	/location	(Bamberg) utf8
+    %	/year		(2015)
+    %	/date		(2015-12-12)
+
+%	picture list in: ~/Pictures/album/list/calendar-2019-wasser-karlsruhe
+
+% check SOS parameters
+%cimg0450.jpg	2011-03-09	Platanen in der Nizza-Anlage	Frankfurt
+    /X0 <<
+	/fname		(pics/2020-ffm/cimg0450-16:9.jpg)
+	/description	(Platanen in der Nizza-Anlage) utf8
+	/author		(Klaus-Dieter Ost)
+	/location	(Frankfurt) utf8
+	/year		(2011)
+	/date		(2011-03-09)
+	/clipAtY	0 % pixel value
+    >>
+
+%cimg4923.jpg	2011-10-20	rote Front, Haus der IGM im Gutleutviertel	Frankfurt
+    /X1 <<
+	/fname		(pics/2020-ffm/cimg4923.jpg)
+	/description	(Rote Front) utf8
+	/author		(Klaus-Dieter Ost)
+	/location	(Frankfurt, Haus der IGM im Gutleutviertel) utf8
+	/year		(2011)
+	/date		(2011-10-20)
+	/clipAtY	200 % pixel value
+    >>
+
+%cimg5054.jpg	2011-11-04	Nacht am Main, Blick von der Friedens-Brücke	Frankfurt
+    /X2 <<
+	/fname		(pics/2020-ffm/cimg5054.jpg)
+	/description	(Nacht am Main) utf8
+	/author		(Klaus-Dieter Ost)
+	/location	(Frankfurt, Blick von der Friedens-Brücke) utf8
+	/year		(2011)
+	/date		(2011-11-04)
+	/clipAtY	1 % pixel value
+    >>
+
+%cimg5216.jpg	2011-12-02	Traffic Lights, vor dem Hauptbahnhof	Frankfurt
+    /X3 <<
+	/fname		(pics/2020-ffm/cimg5216-16:9.jpg)
+	/description	(Traffic Lights) utf8
+	/author		(Klaus-Dieter Ost)
+	/location	(Frankfurt, vor dem Hauptbahnhof) utf8
+	/year		(2011)
+	/date		(2011-12-02)
+	/clipAtY	0 % pixel value
+    >>
+
+%cimg5902.jpg	2012-06-01	hier lang stopp, bei der Nizza-Anlage	Frankfurt
+    /X4 <<
+	/fname		(pics/2020-ffm/cimg5902-16:9.jpg)
+	/description	(hier lang - stopp) utf8
+	/author		(Klaus-Dieter Ost)
+	/location	(Frankfurt, bei der Nizza-Anlage) utf8
+	/year		(2012)
+	/date		(2012-06-01)
+	/clipAtY	0 % pixel value
+    >>
+
+%cimg6026.jpg	2012-06-14	hier!, Nizza-Anlage	Frankfurt
+    /X5 <<
+	/fname		(pics/2020-ffm/cimg6026-16:9-stretched.jpg)
+	/description	(hier!) utf8
+	/author		(Klaus-Dieter Ost)
+	/location	(Frankfurt, Nizza-Anlage) utf8
+	/year		(2012)
+	/date		(2012-06-14)
+	/clipAtY	0 % pixel value
+    >>
+
+%cimg6121.jpg	2012-06-22	der Stoltze Friedrich, Brunnen	Frankfurt
+    /X6 <<
+	/fname		(pics/2020-ffm/cimg6121-16:9.jpg)
+	/description	(Der Stoltze Friedrich) utf8
+	/author		(Klaus-Dieter Ost)
+	/location	(Frankfurt, Friedrich-Stoltze-Platz) utf8
+	/year		(2012)
+	/date		(2012-06-22)
+	/clipAtY	0 % pixel value
+    >>
+
+%cimg6308.jpg	2012-07-24	"Old Apache Chief Geronimo Is Dead" (New York Times, 1909), beim Jüdischen Museum	Frankfurt
+    /X7 <<
+	/fname		(pics/2020-ffm/cimg6308-16:9.jpg)
+	/description	("Old Apache Chief Geronimo Is Dead" (New York Times, 1909)) utf8
+	/author		(Klaus-Dieter Ost)
+	/location	(Frankfurt, beim Jüdischen Museum) utf8
+	/year		(2012)
+	/date		(2012-07-24)
+	/clipAtY	0 % pixel value
+    >>
+
+%cimg6806.jpg	2012-10-16	Strassencafe, Alte Oper	Frankfurt
+    /X8 <<
+	/fname		(pics/2020-ffm/cimg6806-16:9.jpg)
+	/description	(Strassencafé) utf8
+	/author		(Klaus-Dieter Ost)
+	/location	(Frankfurt, Alte Oper) utf8
+	/year		(2012)
+	/date		(2012-10-16)
+	/clipAtY	0 % pixel value
+    >>
+
+%cimg7016.jpg	2012-11-29	Platanen, Museumsufer	Frankfurt
+    /X9 <<
+	/fname		(pics/2020-ffm/cimg7016.jpg)
+	/description	(Platanen am Museumsufer) utf8
+	/author		(Klaus-Dieter Ost)
+	/location	(Frankfurt) utf8
+	/year		(2012)
+	/date		(2012-11-29)
+	/clipAtY	200 % pixel value 
+    >>
+
+%cimg7137.jpg	2013-01-08	Rotunde, Schirn-Kunsthalle (sw)	Frankfurt
+    /X10 <<
+	/fname		(pics/2020-ffm/cimg7137-16:9.jpg)
+	/description	(Die Rotunde der Schirn-Kunsthalle) utf8
+	/author		(Klaus-Dieter Ost)
+	/location	(Frankfurt) utf8
+	/year		(2013)
+	/date		(2013-01-08)
+	/clipAtY	0 % pixel value
+    >>
+
+%cimg7461.jpg	2013-02-20	kein Christo, Hauptbahnhof	Frankfurt
+    /X11 <<
+	/fname		(pics/2020-ffm/cimg7461-16:9.jpg)
+	/description	(Kein Christo) utf8
+	/author		(Klaus-Dieter Ost)
+	/location	(Frankfurt, Hauptbahnhof beim Umbau) utf8
+	/year		(2013)
+	/date		(2013-02-20)
+	/clipAtY	0 % pixel value
+    >>
+
+%p6180509.jpg	2013-06-18	das Alte im Neuen, EZB	Frankfurt
+    /X12 <<
+	/fname		(pics/2020-ffm/p6180509-16:9.jpg)
+	/description	(Das Alte im Neuen) utf8
+	/author		(Klaus-Dieter Ost)
+	/location	(Frankfurt, alte EZB) utf8
+	/year		(2013)
+	/date		(2013-06-18)
+	/clipAtY	0 % pixel value
+    >>
+>> def
+
+/all-photos [
+%  1 - 12   2020
+    /X12
+    /X0
+    /X1
+    /X4
+    /X8
+    /X6
+    /X7
+    /X11
+    /X10
+    /X9
+    /X2
+    /X3
+% 13 - 24   2021
+    /X5
+] def
+
+% frankfurt-2020.ps ends here --------------------------------------

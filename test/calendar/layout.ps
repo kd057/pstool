@@ -1,0 +1,41 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% visualize the layout elements
+
+(psconfig.ps) run
+
+(lib/psunit.ps) require
+(lib/calendar/layout.ps) require
+(lib/basic.ps) require
+
+% printable area
+% --------------
+
+layout.printableArea
+0 % linewidth
+rect.at.inner
+0.4 setgray fill
+
+% photo
+% -----
+
+layout.photoSize
+layout.photoOrigin
+0 % linewidth
+rect.at.inner
+0.8 setgray fill
+
+% calendar - days
+% ---------------
+
+layout.calendarSize
+layout.calendarOrigin
+0 % linewidth
+rect.at.inner
+0.6 setgray fill
+
+showpage
+
+% test/calendar/layout.ps ends here --------------------------------

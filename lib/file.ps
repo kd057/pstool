@@ -1,0 +1,45 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% file.ps - file handling
+
+(psconfig.ps) run
+
+% read a 16 bit word
+% file read.word --> 2nd-byte 1st-byte true
+% file read.word --> false
+/read.word {
+    dup			% file file
+    read {		% file byte true
+	% got first byte
+	exch		% byte file
+	read {		% byte byte  true
+	    exch	% 2nd-byte 1st-byte
+	    true	% return code
+	} {
+	    pop		% <empty>
+	    false	% return code
+	} ifelse
+    } {
+	pop
+	false
+    } ifelse
+} def
+
+% read a 8 bit byte - to complement read.word
+% file read.byte --> byte true
+% file read.byte --> false
+/read.byte {
+    read		% file byte true
+} def
+
+% dumps the file status
+% file print.file.status --> true | false 
+/print.file.status {
+    (file status: ) log
+    status not { (NOT ) log } if
+    (OK) logln
+} def
+
+% file.ps ends here ------------------------------------------------

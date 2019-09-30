@@ -1,0 +1,41 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test dictionary select operator
+
+(psconfig.ps) run
+
+(lib/psunit.ps) require
+(lib/collection.ps) require
+(lib/math.ps) require
+(lib/log.ps) require
+
+/numbers <<
+    1 (one)
+    2 (zwei)
+    3 (trois)
+    4 (quattro)
+    5 (cinque)
+    6 (six)
+    7 (sieben)
+>> def
+
+numbers logln
+numbers { odd } select logln
+numbers { 1 add even } select logln
+numbers { 0 gt } select logln
+numbers { 0 exch gt } select logln
+
+(***** select2 - "odd" *****) logln
+numbers { odd } select2 logln logln
+(***** select2 - "not even" *****) logln
+numbers { 1 add even } select2 logln logln
+
+(***** select2.value - "length <=4" *****) logln
+numbers { length 4 le } select2.value logln logln
+
+showstack
+psunit.summary
+
+% test/dict.select.ps ends here ------------------------------------

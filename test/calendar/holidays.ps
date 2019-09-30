@@ -1,0 +1,42 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% display the calendarium for a single month
+
+(psconfig.ps) run
+
+(lib/psunit.ps) require
+
+(lib/calendar/caldata.ps) require
+(lib/calendar/holidays.ps) require
+(lib/calendar/showmonth.ps) require
+
+% initialize calendar
+2017 1 month.first
+2017 (DE) (BW) setup.day.maps
+
+/test.basics {
+    1 is.a.holiday? assert.TRUE
+    2 is.a.holiday? assert.FALSE
+    6 is.a.holiday? assert.TRUE		% at least in Baden-Württemberg
+    104 is.a.holiday? assert.TRUE	% good friday
+    (******************* 2017 10 31 dayOfYear <---------- must be fixed *******************) logln
+%    2017 10 31 dayOfYear
+%    is.a.holiday? assert.TRUE		% at least 2017
+} def
+
+test.basics
+
+104 DAY.TO.SYMBOL exch get /GOODFRIDAY assert.EQ
+104 DAY.TO.SYMBOL exch get MAP.HOLIDAY exch known assert.TRUE
+104 DAY.TO.SYMBOL exch get MAP.HOLIDAY exch get assert.TRUE
+
+/EASTER SYMBOL.TO.DAY exch get 106 assert.EQ
+/PENTECOST SYMBOL.TO.DAY exch get 155 assert.EQ
+/CHRISTMAS SYMBOL.TO.DAY exch get 359 assert.EQ
+
+psunit.summary
+(***stack should be empty ***) logstack
+
+% test/specialdays.ps ends here ------------------------------------

@@ -1,0 +1,25 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% display the calendarium for a single month
+
+(psconfig.ps) run
+
+(lib/psunit.ps) require
+
+(lib/calendar/specialdays.ps) require
+% holidays.ps is required to get the reverse mapping
+(lib/calendar/holidays.ps) require
+(lib/calendar/showmonth.ps) require
+
+% basic tests
+
+2017 1 month.first
+2017 (DE) (BW) setup.day.maps
+
+setup.DAYNAME
+
+(***stack should be empty ***) logstack
+
+% test/specialdays.ps ends here ------------------------------------

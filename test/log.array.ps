@@ -1,0 +1,29 @@
+%!PS
+%
+% Copyright (c) 2018, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test logging / printing functions for arrays
+
+(psconfig.ps) run
+
+(lib/log.ps) require
+(lib/psunit.ps) require
+
+(an array) logln
+[ /a /b ] log.array log.ln
+nesting.level (nesting.level must be zero) 0 assert.msg.EQ
+
+(nested arrays) logln
+[ /a [ 2 (c) ] 4 ] log.array log.ln
+nesting.level (nesting.level must be zero) 0 assert.msg.EQ
+
+(code block) logln
+{ 1 0 gt { (gt) log } { (le) log } ifelse log.ln } log.array log.ln
+
+(not an array - issues a message) logln
+(not an array - issues a message) log.array log.ln
+
+showstack
+psunit.summary
+
+% test/log.arrays.ps ends here -------------------------------------

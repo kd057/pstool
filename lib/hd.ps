@@ -1,0 +1,52 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% hd.ps - hex dump
+
+(psconfig.ps) run
+
+(lib/string.ps) require
+(lib/log.ps) require
+
+% hex dump
+% string hd --> | returns the string in hex
+/hd {
+    /hex.out () def
+    {
+	16 2 string cvrs
+	hex.out exch
+	concat ( ) concat
+	/hex.out exch def
+    } forall
+    hex.out
+} def
+
+% splits a string in 16 byte chunks and returns an array of hex dumps
+% string hd.16 --> [ hexdumps ]
+/hd.16 {
+    [
+	exch
+	{
+	    16 string.head
+	    hd
+	    exch dup length 0 eq { pop exit } if
+	} loop
+    ]
+} def
+
+% dump file contents in hex
+% file hd.file --> % hex dump written to stdout
+/hd.file {
+    {
+	dup
+	1024 string
+	readstring
+	exch hd.16
+	logln
+	not { exit } if
+    } loop
+    pop
+} def
+
+% hd.ps ends here --------------------------------------------------

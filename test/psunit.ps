@@ -1,0 +1,20 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test psunit
+
+(psconfig.ps) run
+
+(lib/psunit.ps) require
+
+false assert.FALSE
+true  assert.TRUE
+
+false (false must be OK here)  assert.msg.FALSE
+true  (true is not OK here  )  assert.msg.TRUE
+
+showstack
+psunit.summary
+
+% test/psunit.ps ends here -----------------------------------------

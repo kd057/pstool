@@ -1,0 +1,36 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% basic.ps - basic components of a page
+
+(psconfig.ps) run
+(lib/log.ps) require
+
+% create a new path for a rectangle at the given position, so that the lines are "inside"
+% call stroke or fill to draw it
+% width height llx lly linewidth --> |
+/rect.at.inner {
+    dup /lw exch def
+    setlinewidth
+    lw 2 div dup translate
+    exch lw sub
+    exch lw sub
+    rectstroke
+} def
+
+% display the diagonals of a rectangle
+% width height llx lly linewidth --> |
+/diagonals {
+    gsave			% width height llx lly linewidth
+	setlinewidth		% width height llx lly
+	4 copy			% width height llx lly width height llx lly
+	moveto lineto		% width height llx lly
+	4 -1 roll		% height llx lly width
+	exch moveto		% height llx
+	exch lineto		% |
+	stroke
+    grestore
+} def
+
+% basic.ps ends here -----------------------------------------------

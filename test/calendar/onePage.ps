@@ -1,0 +1,37 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% libtool.ps - common functionality for .ps file
+
+(psconfig.ps) run
+
+(lib/math.ps) require
+(lib/psunit.ps) require
+
+/isleap.test {
+    1999 dup log ( ) log isleap assert.FALSE
+    2000 dup log ( ) log isleap assert.TRUE
+    2001 dup log ( ) log isleap assert.FALSE
+    2002 dup log ( ) log isleap assert.FALSE
+    2003 dup log ( ) log isleap assert.FALSE
+    2004 dup log ( ) log isleap assert.TRUE
+    2016 dup log ( ) log isleap assert.TRUE
+    2017 dup log ( ) log isleap assert.FALSE
+    2100 dup log ( ) log isleap assert.FALSE
+} def
+
+/max.test {
+    1 2 max 2 assert.EQ
+    1 2 3 max max 3 assert.EQ
+    1 2 3 4 max max max 4 assert.EQ
+    2 1 max 2 assert.EQ
+    4 3 2 1 max max max 4 assert.EQ
+} def
+
+isleap.test pstack
+max.test pstack
+
+psunit.summary
+
+% test/libtool.ps ends here ----------------------------------------

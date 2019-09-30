@@ -1,0 +1,84 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% math.ps - mathematical functions
+
+/odd {
+   2 mod 1 eq 
+} def
+
+/even {
+   odd not
+} def
+
+% compares two items on the stack, deletes the larger
+% oldmin newvalue --> newmin
+/min {
+    2 copy	% oldmin newval oldmin newval
+    gt {	% oldmin newval bool
+	% old value is greater, keep new value
+	exch
+    } if
+    pop		% newmin
+} def
+
+% compares two items on the stack, deletes the smaller
+% oldmax newvalue --> newmax
+/max {
+    2 copy	% oldmax newval oldmax newval
+    lt {	% oldmax newval bool
+	% old value is less, keep new value
+	exch
+    } if
+    pop		% newmax
+} def
+
+% year --> bool
+/isleap {
+    dup 4 mod		% year mod
+    0 eq {		% year
+	dup		% year year
+	100 mod		% year mod
+	0 eq {		% year
+	    400 mod	% mod
+	    0 eq	% bool -- true if divisible by 400, else false
+	} {		% year
+	    pop		%
+	    true
+	} ifelse
+    } { 		% year
+	pop
+	false
+    } ifelse
+} def
+
+% greatest common divisor
+% a b --> gcd
+/gcd {
+    dup 0 eq {		% a b bool
+	pop		% a
+    } {
+	2 copy		% a b a b
+	gt {		% a b
+	    exch	% b a
+	    1 index sub	% b a-b
+	    gcd
+	} {		% a b
+	    1 index sub	% a b-a
+	    gcd
+	} ifelse
+    } ifelse
+} def
+
+% inch, cm, ...
+% inch --> point
+/inch { 72 mul } def
+
+% cm --> point
+/cm { inch 2.54 div} def
+
+% mm --> point
+/mm { inch 25.4 div} def
+
+% math.ps ends here ------------------------------------------------

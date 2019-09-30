@@ -1,0 +1,41 @@
+%!PS
+
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% jpegdump.ps - provide a readable dump of (the meta data of) a jpeg file
+
+(psconfig.ps) run
+
+(lib/log.ps) require
+(lib/string.ps) require
+(lib/jpegmarkers.ps) require
+(lib/file.ps) require
+(lib/hd.ps) require
+(lib/jpeg.analyze.ps) require
+(lib/jpeg.segments.log.ps) require
+
+% dictionary of type specific handlers; missing handlers are replaced by "handle.segment"
+/jpeg.marker.handle <<
+    /DHT	/handle.indexed.segment
+    /DQT	/handle.indexed.segment
+>> def
+
+% ------------------------------------------------------------------
+%	program properties
+% ------------------------------------------------------------------
+
+% main function - dump a jpeg file
+% filename jpegdump --> true | message false
+/jpegdump {
+    dup				% filename filename
+    jpeganalyze {		% filename true | filename message false
+	(JPEG successfully analyzed: ) log logln	% |
+	true			% true
+    } {				% filename message
+	exch			% message filename
+	(JPEG NOT analyzed: ) log logln	% |
+	false			% false
+    } ifelse
+} def
+
+% jpegdump.ps ------------------------------------------------------

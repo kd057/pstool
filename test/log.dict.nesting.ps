@@ -1,0 +1,38 @@
+%!PS
+%
+% Copyright (c) 2019, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% test logging / check nesting of dictionaries
+
+(psconfig.ps) run
+
+(lib/log.ps) require
+(lib/psunit.ps) require
+
+/nesting.maxlevel 1 def
+
+<<
+%    1			(level-1 1st)
+    2 <<
+%	3		(level-2)
+    >>
+%    4			(level-1 2nd)
+    5 <<
+	6 <<
+%	    7		(level-3 1st)
+	>>
+%	8		(level-2 2nd)
+	9 <<
+	    10		(level-3 2nd)
+	    11 <<
+%		12	(level-4 1st)
+	    >>
+	>>
+	13		(level-2 3rd)
+    >>
+>> logln
+
+showstack
+psunit.summary
+
+% test/log.dict.nesting.ps ends here -------------------------------

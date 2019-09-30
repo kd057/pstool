@@ -1,0 +1,196 @@
+#!/usr/local/bin/bash
+#
+# Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+#
+# create a dependency file for a set of PDF targets or PostScript files
+
+# ----------- keep the documentation below intact -----------
+
+scriptname="$(basename $0)"
+scriptdir="$(cd $(dirname $0); pwd)"
+script="${scriptdir:?}/${scriptname:?}"
+
+USAGE="$scriptname [-d] [-k] [-r] target [...]"
+
+[ "$1" = "-?" ] && {
+    # not as elaborate as SMOs help, but works ...
+    cat <<..EndDocumentation..
+NAME
+
+    $USAGE
+
+ARGUMENTS
+
+    -d      turn on debug messages
+    -k      keep / do not remove work directories and files on exit
+    -r      only extract raw dependencies, do not create a dependencies
+            file, to be included in a makefile
+
+DESCRIPTION
+
+    Create a file of dependencies that can be included in a makefile.
+
+    Files with suffix ".pdf" are assumed to depend on a similar
+    named file with suffix ".ps".
+
+    The script scans a set of postscript files to find all files
+    that a given target depends on. Dependencies might be specified
+    in any of these forms:
+
+        (psconfig.ps)      run
+        (lib/log.ps)       require
+        (lib/pattern_*.ps) expect
+
+    I.e. a filename as string, followed by the PostScript operator
+    "run" or the internally defined operator "require".
+
+    "expect" is a no-op, not really including any file, but supporting
+    dependency handling for dynamically loaded files.
+
+    The dependencies are written to a file ".m.dependencies" in the
+    local directory.
+
+BUGS
+
+    Quick hack
+
+..EndDocumentation..
+    exit 0
+}
+
+# ----------- keep the documentation above intact -----------
+
+# +++ CONFIG +++
+wrkDir=.$scriptname
+debugging=${debugging:-false}
+# --- CONFIG ---
+
+# reset any exit traps
+trap - EXIT
+
+# ------------------------------------------------------------------
+#	local functions
+# ------------------------------------------------------------------
+
+debug() {
+    $debugging && echo >&2 "DEBUG $scriptname -" "$@"
+}
+
+error() {
+    echo >&2 "$scriptname:" "$@"
+}
+
+extractIncludes() {
+    debug extract includes for: $1
+    case "$1" in
+    *.pdf)  # PDFs might be created from .adoc or .ps - prefer the former
+	    ls ${1%%.pdf}.adoc ${1%%.pdf}.ps 2>/dev/null | head -1
+	    ;;
+    *.ps)   sed -n '
+		    /^[^%(]*(\([^)]*\))[ 	]*run[ 	]*.*/bfinis
+		    /^[^%(]*(\([^)]*\))[ 	]*require[ 	]*.*/bfinis
+		    /^[^%(]*(\([^)]*\))[ 	]*expect[ 	]*.*/bfinis
+		    b
+		    :finis
+		    s==ls -d \1=p' <$1 | sh
+	    ;;
+    esac
+}
+
+# ------------------------------------------------------------------
+#	analyze arguments
+# ------------------------------------------------------------------
+
+raw=false
+removeWrkDir=true
+debuggingFlag=
+
+while getopts ':dkr' arg
+    do
+    case "$arg" in
+    d)	debugging=true
+	debuggingFlag=-$arg
+	;;
+    k)	removeWrkDir=false ;;
+    r)	raw=true
+	;;
+
+    *)	error "$scriptname: unrecognized flag: -$OPTARG"
+	error "$USAGE"
+	exit 1
+	;;
+    esac
+done
+
+shift $(( OPTIND - 1 ))
+
+case $# in
+0)  error "build target missing on command line"
+    exit 1
+    ;;
+*)  ;; # ok
+esac
+
+# ------------------------------------------------------------------
+#	check arguments
+# ------------------------------------------------------------------
+
+
+# ------------------------------------------------------------------
+#	main loop
+# ------------------------------------------------------------------
+
+wrkDir=".$scriptname"
+rawDir=".$scriptname/raw"
+allDir=".$scriptname/all"
+
+# phase 1 - extract all includes
+for target
+    do
+
+    # where to collect raw and cumulated data for this target
+    rawIncludes="$rawDir/$target"
+    allIncludes="$allDir/$target"
+
+    # if all includes have been collected for $target, go ahead ...
+    [ -f "$allIncludes" ] && {
+	debug ... already processed: $target
+	continue
+    }
+
+    # new target, collect all dependencies
+
+    # ensure to have all includes for target
+    [ -f "$rawIncludes" ] || {
+	debug ... analyze: $target
+	mkdir -p $(dirname "$rawIncludes")
+	extractIncludes "$target" >$rawIncludes 
+
+	# recursively extract includes for this target
+	for include in $(cat "$rawIncludes")
+	    do
+	    [ -r "$allDir/$include" ] || ${script:?} $debuggingFlag -r "$include"
+	done
+    }
+
+    # collect rawIncludes into allIncludes
+    mkdir -p $(dirname "$allIncludes")
+    (
+	debug ... collect: $target
+
+	# recursively collet includes for this target
+	cat "$rawIncludes"
+	for include in $(cat "$rawIncludes")
+	    do
+	    [ -r "$allDir/$include" ] || ${script:?} $debuggingFlag -r "$include"
+	    cat "$allDir/$include"
+	done
+    ) | sort -u >"$allIncludes"
+
+    # return dependencies at the top level
+    $raw && exit $?
+    sed "s=^=$target:	=" "$allIncludes"
+
+done
+
+# ps.depend ends here ----------------------------------------------

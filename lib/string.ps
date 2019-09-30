@@ -1,0 +1,69 @@
+%!PS
+%
+% Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
+% 
+% string.ps - string handling
+
+(psconfig.ps) run
+
+% concatenate two strings
+% s1 s2 --> s1s2
+/concat {
+    dup length		% s1 s2 length(s2)
+    3 2 roll		% s2 length(s2) s1
+    dup length dup	% s2 length(s2) s1 length(s1) length(s1)
+    4 3 roll add	% s2 s1 length(s1) length
+    string /concat.s exch def	% s2 s1 length(s1)
+    exch concat.s exch 0 exch
+	putinterval	% s2 length(s1)
+    exch concat.s 3 1 roll
+    putinterval
+    concat.s
+} def
+
+% extract max len characters from head of string;
+% if len excedds string length, the string is returned
+% string len string.head --> tailstring headstring
+/string.head {
+    1 index length min	% string min(length, len)
+    exch dup		% len string string
+    0 3 index		% len string string 0 len
+    getinterval		% len string head
+    3 1 roll		% head len string
+    dup length		% head len string length
+    2 index sub		% head len string remainder
+    3 -1 roll exch	% head string len remainder
+    getinterval	exch	% tail head
+} def
+
+% replace the first occurrence of a string; returns false if no replacement done
+% string search replace --> newstring { true | false }
+/string.replace {	% string search replace
+    3 1 roll		% replace string search
+    search {		% replace post match pre true
+    	exch pop	% replace post pre
+	3 -1 roll	% post pre replace
+	concat		% post string
+	exch concat	% string
+	true
+    } {			% replace string false
+	exch pop	% string
+	false		% string false
+    } ifelse
+} def
+
+% replace all occurrences of a string; returns false if no replacement done
+% string search replace --> newstring
+/string.replace.all {	% string search replace
+    3 copy		% string search replace	string search replace
+    string.replace {	% string search replace newstring
+	% string found, replace again
+	4 -1 roll pop	% search replace newstring
+	3 1 roll	% newstring search replace
+	string.replace.all
+    } {			% string search replace newstring
+	4 1 roll pop pop pop	% newstring
+    } ifelse
+} def
+
+% string.ps ends here ----------------------------------------------
