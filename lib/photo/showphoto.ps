@@ -50,8 +50,13 @@
 
     % coordinates of lower left edge of photo
     % convert clipAt* from pixel to pt in the target coordinate system
-    /pllx llx clipAtX w.pixel div w.scale mul sub def
-    /plly lly clipAtY h.pixel div h.scale mul sub def
+    isFixedPosition {
+	/pllx llx def
+	/plly lly def
+    } {
+	/pllx llx clipAtX w.pixel div w.scale mul sub def
+	/plly lly clipAtY h.pixel div h.scale mul sub def
+    } ifelse
 } def
 
 % compute parameters to display the photo with the given target width
@@ -93,8 +98,12 @@
 	    % reset target width to match the original aspect ratio
 	    h h.pixel div w.pixel mul		% final-x
 	    /w.scale exch def			% |
-	    w w.scale sub 2 div			% lower left x within display area
-	    llx add				% llx
+	    isFixedPosition {
+		llx				% new-llx
+	    } {
+		w w.scale sub 2 div		% lower left x within display area
+		llx add				% llx
+	    } ifelse
 	    /pllx exch def			% |
 	} {
 	    w.pixel h mul			% prod1
@@ -103,8 +112,12 @@
 		% reset target height to match the original aspect ratio
 		w w.pixel div h.pixel mul	% final-y
 		/h.scale exch def		% |
-		h h.scale sub 2 div		% lower left y within display area
-		lly add			% new-lly
+		isFixedPosition {
+		    lly				% lly
+		} {
+		    h h.scale sub 2 div		% lower left y within display area
+		    lly add			% new-lly
+		} ifelse
 		/plly exch def			% |
 	    } {
 		(*** image fits into destination area ***) logln
@@ -294,6 +307,7 @@
 % - /clipAtX, /clipAtY
 % - /isFramed
 % - /showClipMarks
+% - /isFixedPosition
 % | --> | % aborts, if invalid or inconsistent,
 /photo.display.defaults {
     /clipAtX		0	defaultTo
@@ -303,6 +317,8 @@
     clipAtX 0 ne
     clipAtY 0 ne or
     /isClipped		exch	def
+
+    /isFixedPosition	true	defaultTo
 
     /isFramed		isClipped	defaultTo
     /showClipMarks	isClipped not	defaultTo
