@@ -256,9 +256,9 @@ or {
 } def
 
 % grid titles might have variants; return the defined variant or the default value
-% variant 0:	see Potsdam 2018 - year centred in the upper right, title centered in the lower left
-% variant 1:	see Wasser 2019@480:3cfeb418a42c - year justified upper right, multi-line title left justified
-% variant 2:	see Wasser 2019 (final) - like 1, but title extend below image area
+% variant 0:	year centred in the upper right, title centered in the lower left (2 grid cells) - Potsdam 2018
+% variant 1:	year justified at upper right, multi-line title left justified at lower left (bottom up) - Wasser 2019, @480
+% variant 2:	like 1, but title extends below image area - Wasser 2019 final
 % title-dict --> variant
 /get.grid.variant {
     dup					% title-dict title-dict
@@ -306,13 +306,6 @@ or {
 	pop				% title-dict
     } if
 
-    grid.variant 2 eq {
-	% VARIANT 2 is like VARIANT 2; bottom title line extends below image area
-	/grid.variant 1 def
-	pt.title.large 1.3 mul neg
-	0 exch rmoveto
-    } if
-
     grid.variant 1 eq {
 	% VARIANT 1: show a list of titles, "bottom up"
 
@@ -326,6 +319,12 @@ or {
 	} forall
     } if
 
+    grid.variant 2 eq {
+	% VARIANT 2 is like VARIANT 1; bottom title line extends below image area
+	/grid.variant 1 def
+	pt.title.large 1.3 mul neg
+	0 exch rmoveto
+    } if
 
     % --------------------------------------------
 
