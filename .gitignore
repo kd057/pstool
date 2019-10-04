@@ -1,0 +1,14 @@
+\.pdf$
+\.html$
+\.orig$
+.m.dependencies
+
+# do not include info and pics directory 
+info/
+pics/
+
+# do not include pax archives
+.pax$
+
+# do not include working directories ...
+.ps.depend/
