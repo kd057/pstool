@@ -1,4 +1,6 @@
 # Makefile for the pstool project
+#
+# Copyright (c) 2017, Klaus-Dieter Ost, SMO GmbH Software Manufaktur, All rights reserved
 
 # +++ CONFIG +++
 
