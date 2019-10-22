@@ -302,12 +302,24 @@
     } if
 } def
 
-% provide default values for display parameters:
-% - /isClipped
-% - /clipAtX, /clipAtY
-% - /isFramed
-% - /showClipMarks
-% - /isFixedPosition
+% ensure, some parameters are set to reasonable values; provide
+% defaults, if these variables have not yet been initialized
+%
+% variable              | meaning
+% ----------------------+---------------------------------------------------------
+% - /clipAtX            | clip image at this X coordinate pixel -
+%                       | everything to the right will be displayed
+% - /clipAtY            | clip image at this Y coordinate pixel -
+%                       | everything above will be displayed
+% - /isClipped          | (internal only) true if one of clipAtX, clipAtY is set
+% - /isFixedPosition    | defaults to true, if one of clipAt[XY] is set;
+%                       | if false, image is horizontally / vertically centered
+% - /isFramed           | draw a frame around the image (intended for debugging);
+%                       | defaults to isClipped
+% - /showClipMarks      | display clip marks at left and right or top and bottom
+%                       | false, if isClipped is true and vice versa
+%
+% these variables
 % | --> | % aborts, if invalid or inconsistent,
 /photo.display.defaults {
     /clipAtX		0	defaultTo
@@ -318,7 +330,7 @@
     clipAtY 0 ne or
     /isClipped		exch	def
 
-    /isFixedPosition	true	defaultTo
+    /isFixedPosition	isClipped	defaultTo
 
     /isFramed		isClipped	defaultTo
     /showClipMarks	isClipped not	defaultTo
